@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Effra';
+  src: url('/fonts/Effra.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}

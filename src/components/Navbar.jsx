@@ -1,58 +1,73 @@
-import { Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { auth } from "../lib/firebase";
-import { signOut } from "firebase/auth";
-import CartIcon from "./CartIcon"; // 👈 Import CartIcon
+import { NavLink, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { auth } from '../lib/firebase';
+import { signOut } from 'firebase/auth';
+import CartIcon from './CartIcon';
 
 const Navbar = ({ onCartClick }) => {
-  // 👈 Accept onCartClick prop
   const { user } = useAuth();
 
+  const navLinkClass = ({ isActive }) =>
+    isActive
+      ? 'text-primary font-semibold border-b-2 border-primary pb-1 transition'
+      : 'text-text-secondary hover:text-primary transition';
+
   return (
-    <nav className="bg-white shadow-md">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-gray-800">
-          Urban Grill
-        </Link>
-        <div className="space-x-6 flex items-center">
-          {/* Public Links */}
-          <Link to="/" className="text-gray-600 hover:text-gray-800">
-            Home
-          </Link>
-          <Link to="/menu" className="text-gray-600 hover:text-gray-800">
-            Menu
-          </Link>
+    <nav className="bg-background shadow-lg">
+      <div className="max-w-7xl mx-auto">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link
-            to="/reservations"
-            className="text-gray-600 hover:text-gray-800 font-semibold"
+            to="/"
+            className="text-2xl font-extrabold tracking-wide text-primary hover:text-primary-hover transition"
           >
-            Book a Table
+            Urban Grill
           </Link>
-          <CartIcon onClick={onCartClick} /> {/* 👈 Add CartIcon */}
-          {/* Conditional Admin/Login Links */}
-          {user ? (
-            <>
-              <Link
-                to="/admin/reservations"
-                className="text-blue-600 hover:text-blue-800 font-semibold"
+
+          <div className="space-x-8 flex items-center font-medium">
+            <NavLink to="/" className={navLinkClass}>
+              Home
+            </NavLink>
+            <NavLink to="/menu" className={navLinkClass}>
+              Menu
+            </NavLink>
+            <NavLink to="/reservations" className={navLinkClass}>
+              Book a Table
+            </NavLink>
+
+            <CartIcon onClick={onCartClick} />
+
+            {user ? (
+              <>
+                <NavLink
+                  to="/admin/reservations"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'text-secondary font-semibold border-b-2 border-secondary pb-1 transition'
+                      : 'text-secondary hover:text-secondary-hover font-semibold transition'
+                  }
+                >
+                  Dashboard
+                </NavLink>
+                <button
+                  onClick={() => signOut(auth)}
+                  className="bg-primary text-white py-2 px-5 rounded-lg shadow-md hover:bg-primary-hover transition"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  isActive
+                    ? 'bg-secondary text-white py-2 px-5 rounded-lg shadow-md border-2 border-secondary'
+                    : 'bg-secondary text-white py-2 px-5 rounded-lg shadow-md hover:bg-secondary-hover transition'
+                }
               >
-                Dashboard
-              </Link>
-              <button
-                onClick={() => signOut(auth)}
-                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-            >
-              Admin Login
-            </Link>
-          )}
+                Admin Login
+              </NavLink>
+            )}
+          </div>
         </div>
       </div>
     </nav>

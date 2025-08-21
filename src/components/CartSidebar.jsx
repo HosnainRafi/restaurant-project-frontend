@@ -2,7 +2,6 @@ import { useRef, useMemo } from "react";
 import { useCart } from "../hooks/useCart";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import { useNavigate } from "react-router-dom"; // 👈 1. Import useNavigate
-import toast from "react-hot-toast";
 
 const CartSidebar = ({ isOpen, onClose }) => {
   const { items, removeItem, clearCart } = useCart();
