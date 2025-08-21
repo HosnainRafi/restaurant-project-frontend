@@ -1,8 +1,10 @@
 import ChefsRecommendations from '@/components/ChefsRecommendations';
 import FeaturedSection from '@/components/FeaturedSection';
 import HeroSection from '@/components/Hero';
+import OurChefs from '@/components/OurChefs';
 import Testimonials from '@/components/Testimonials';
 import TodaysMenu from '@/components/TodaysMenu';
+import WhyChooseUs from '@/components/WhyChooseUs';
 
 const HomePage = () => {
   return (
@@ -11,7 +13,9 @@ const HomePage = () => {
       <FeaturedSection />
       <TodaysMenu />
       <ChefsRecommendations />
-      <Testimonials/>
+      <Testimonials />
+      <WhyChooseUs />
+      <OurChefs />
     </div>
   );
 };
