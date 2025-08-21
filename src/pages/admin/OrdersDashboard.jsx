@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import api from "../../lib/api";
-import toast from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import api from '../../lib/api';
+import toast from 'react-hot-toast';
 
 const OrdersDashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -9,10 +9,10 @@ const OrdersDashboard = () => {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get("/orders");
+      const response = await api.get('/orders');
       setOrders(response.data.data);
     } catch (error) {
-      toast.error("Failed to fetch orders.");
+      toast.error('Failed to fetch orders.');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -25,14 +25,15 @@ const OrdersDashboard = () => {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     const promise = api.patch(`/orders/${orderId}`, { status: newStatus });
+
     toast.promise(promise, {
-      loading: "Updating order status...",
-      success: "Status updated successfully!",
-      error: "Failed to update status.",
+      loading: 'Updating order status...',
+      success: 'Status updated successfully!',
+      error: 'Failed to update status.',
     });
+
     try {
       await promise;
-      // Refetch all orders to get the latest state
       fetchOrders();
     } catch (error) {
       console.error(error);
@@ -40,75 +41,75 @@ const OrdersDashboard = () => {
   };
 
   if (isLoading) {
-    return <div className="p-8">Loading orders...</div>;
+    return (
+      <div className="p-8 text-center text-gray-500">Loading orders...</div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Manage Customer Orders</h1>
-      <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table className="min-w-full leading-normal">
-          <thead>
-            <tr className="bg-gray-200 text-gray-600 uppercase text-sm">
-              <th className="px-5 py-3 border-b-2 border-gray-300 text-left">
+    <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
+      <h2 className="text-3xl font-bold text-primary mb-6 md:mb-10 text-center">
+        Manage Customer Orders
+      </h2>
+      <div className="bg-white shadow-lg rounded-xl overflow-x-auto">
+        <table className="min-w-full table-auto divide-y divide-gray-200">
+          <thead className="bg-primary/10">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-primary uppercase">
                 Order #
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-300 text-left">
+              <th className="px-4 py-3 text-left text-sm font-semibold text-primary uppercase">
                 Customer
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-300 text-left">
+              <th className="px-4 py-3 text-left text-sm font-semibold text-primary uppercase">
                 Total
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-300 text-center">
+              <th className="px-4 py-3 text-center text-sm font-semibold text-primary uppercase">
                 Status
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-300 text-center">
+              <th className="px-4 py-3 text-center text-sm font-semibold text-primary uppercase">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr
-                key={order._id}
-                className="border-b border-gray-200 hover:bg-gray-100"
-              >
-                <td className="px-5 py-4 font-mono text-sm">
+          <tbody className="divide-y divide-gray-100">
+            {orders.map(order => (
+              <tr key={order._id} className="hover:bg-gray-50 transition">
+                <td className="px-4 py-3 font-mono text-gray-800">
                   {order.orderNumber}
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-4 py-3 text-gray-600">
                   <p className="font-semibold">{order.customer.name}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-400">
                     {order.customer.phone}
                   </p>
                 </td>
-                <td className="px-5 py-4 font-semibold">
+                <td className="px-4 py-3 font-semibold text-gray-800">
                   ${(order.total / 100).toFixed(2)}
                 </td>
-                <td className="px-5 py-4 text-center">
+                <td className="px-4 py-3 text-center">
                   <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
-                      order.status === "completed"
-                        ? "bg-green-200 text-green-800"
-                        : order.status === "cancelled"
-                        ? "bg-red-200 text-red-800"
-                        : "bg-blue-200 text-blue-800"
+                    className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${
+                      order.status === 'completed'
+                        ? 'bg-green-100 text-green-800'
+                        : order.status === 'cancelled'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-primary/20 text-primary'
                     }`}
                   >
                     {order.status}
                   </span>
                 </td>
-                <td className="px-5 py-4 text-center">
-                  {/* Dropdown to change status */}
+                <td className="px-4 py-3 text-center">
                   <select
                     value={order.status}
-                    onChange={(e) =>
+                    onChange={e =>
                       handleUpdateStatus(order._id, e.target.value)
                     }
-                    className="border border-gray-300 rounded p-1"
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:ring-primary focus:border-primary outline-none transition cursor-pointer"
                     disabled={
-                      order.status === "completed" ||
-                      order.status === "cancelled"
+                      order.status === 'completed' ||
+                      order.status === 'cancelled'
                     }
                   >
                     <option value="pending">Pending</option>
