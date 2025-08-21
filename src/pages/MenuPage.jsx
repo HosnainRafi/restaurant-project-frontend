@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import api from "../lib/api";
-import MenuItemCard from "../components/MenuItemCard";
 import toast from "react-hot-toast";
+import SingleMenuItem from "@/components/SingleMenuItem";
 
 const MenuPage = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -32,9 +32,7 @@ const MenuPage = () => {
     fetchData();
   }, []);
 
-  // ✅ This is the corrected part
   const menuByCategory = useMemo(() => {
-    // First, ensure categories and menuItems are arrays before reducing
     if (!Array.isArray(categories) || !Array.isArray(menuItems)) {
       return {};
     }
@@ -42,7 +40,6 @@ const MenuPage = () => {
     return categories.reduce((acc, category) => {
       acc[category._id] = {
         name: category.name,
-        // Compare the IDs within the objects
         items: menuItems.filter(
           (item) => item.categoryId?._id === category._id
         ),
@@ -65,7 +62,6 @@ const MenuPage = () => {
 
       {categories.map(
         (category) =>
-          // Only render a category section if it has items
           menuByCategory[category._id]?.items.length > 0 && (
             <div key={category._id} className="mb-12">
               <h2 className="text-3xl font-semibold mb-6 border-b-2 border-gray-300 pb-2">
@@ -73,7 +69,7 @@ const MenuPage = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {menuByCategory[category._id]?.items.map((item) => (
-                  <MenuItemCard key={item._id} item={item} />
+                  <SingleMenuItem key={item._id} item={item} />
                 ))}
               </div>
             </div>
