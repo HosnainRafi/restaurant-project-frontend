@@ -6,7 +6,7 @@ import MenuPage from '@/pages/MenuPage';
 import ReservationPage from '@/pages/ReservationPage';
 import { createBrowserRouter } from 'react-router-dom';
 import ProtectedRoute from './../components/ProtectedRoute';
-import AdminLayout from '@/pages/admin/AdminLayout';
+import AdminLayout from '@/Layout/AdminLayout';
 import ReservationsDashboard from '@/pages/admin/ReservationsDashboard';
 import OrdersDashboard from '@/pages/admin/OrdersDashboard';
 import MenuDashboard from '@/pages/admin/MenuDashboard';
@@ -42,14 +42,14 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <MainLayout />,
+    element: <AdminLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
         path: '',
         element: (
           <ProtectedRoute>
-            <AdminLayout />
+            <ReservationsDashboard />
           </ProtectedRoute>
         ),
       },

@@ -60,8 +60,8 @@ const Navbar = ({ onCartClick }) => {
                 to="/login"
                 className={({ isActive }) =>
                   isActive
-                    ? 'bg-secondary text-white py-2 px-5 rounded-lg shadow-md border-2 border-secondary'
-                    : 'bg-secondary text-white py-2 px-5 rounded-lg shadow-md hover:bg-secondary-hover transition'
+                    ? 'bg-primary text-white py-1.5 px-4 rounded-md shadow-md border-2 border-primary'
+                    : 'bg-primary text-white py-2 px-5 rounded-md shadow-md hover:bg-primary-hover transition'
                 }
               >
                 Admin Login
