@@ -5,6 +5,7 @@ import {
   FaShoppingCart,
   FaHome,
   FaSignOutAlt,
+  FaPlusCircle,
 } from 'react-icons/fa';
 
 const AdminSidebar = () => {
@@ -16,7 +17,9 @@ const AdminSidebar = () => {
     <aside className="w-64 bg-white shadow-xl flex flex-col h-screen overflow-y-auto">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <Link to='/' className="text-2xl font-bold text-primary">Admin Dashboard</Link>
+        <Link to="/" className="text-2xl font-bold text-primary">
+          Admin Dashboard
+        </Link>
       </div>
 
       {/* Nav Links */}
@@ -58,7 +61,19 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/menu"
+          to="/admin/add-menu-item"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+              isActive ? activeLinkClass : inactiveLinkClass
+            }`
+          }
+        >
+          <FaPlusCircle className="text-lg" />
+          Add Menu Item
+        </NavLink>
+
+        <NavLink
+          to="/admin/menu-management"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass

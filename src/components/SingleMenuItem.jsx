@@ -36,7 +36,7 @@ const SingleMenuItem = ({ item }) => {
 
       <div className="col-span-3 overflow-hidden">
         <img
-          src={item.image || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
+          src={item.imageUrl || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
           alt={item.name}
           className="w-full h-full object-cover transition-transform duration-500 ease-in-out hover:scale-105"
         />

@@ -9,8 +9,9 @@ import ProtectedRoute from './../components/ProtectedRoute';
 import AdminLayout from '@/Layout/AdminLayout';
 import ReservationsDashboard from '@/pages/admin/ReservationsDashboard';
 import OrdersDashboard from '@/pages/admin/OrdersDashboard';
-import MenuDashboard from '@/pages/admin/MenuDashboard';
 import ErrorPage from '@/pages/Error/Error';
+import MenuManagement from '@/pages/admin/MenuManagement';
+import AddMenuItem from '@/pages/admin/AddMenuItem';
 
 export const router = createBrowserRouter([
   {
@@ -70,10 +71,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'menu',
+        path: 'add-menu-item',
         element: (
           <ProtectedRoute>
-            <MenuDashboard />
+            <AddMenuItem />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'menu-management',
+        element: (
+          <ProtectedRoute>
+            <MenuManagement />
           </ProtectedRoute>
         ),
       },
