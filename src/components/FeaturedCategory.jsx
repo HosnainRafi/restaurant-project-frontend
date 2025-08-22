@@ -23,49 +23,44 @@ const FeaturedCategory = () => {
   const demoDescription = 'Delicious chef-selected dishes curated for you.';
 
   return (
-    <section className="py-16 bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary text-center">
-          Featured Category
+    <section className="py-12 bg-background">
+      <div className="max-w-7xl mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-primary text-center">
+          Featured Categories
         </h2>
-        <p className="text-text-secondary text-center mt-3 mb-12 max-w-2xl mx-auto">
-          Explore our chef-selected dishes, crafted with passion and premium
-          ingredients, to give you an unforgettable dining experience.
+        <p className="text-text-secondary text-center mt-2 mb-8 max-w-xl mx-auto text-sm md:text-base">
+          Handpicked categories by our chefs to make your dining experience
+          extra special.
         </p>
 
-        {/* Items */}
         {categories.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {categories.map(item => (
-              <div
+              <Link
                 key={item._id}
-                className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition"
+                to="/menu"
+                className="relative group rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
               >
+                {/* Image */}
                 <div className="overflow-hidden">
                   <img
-                    src={demoImage}
+                    src={item?.imageUrl || demoImage}
                     alt={item.name}
-                    className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                    className="w-full h-28 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                     loading="lazy"
                   />
                 </div>
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition flex flex-col justify-end p-4">
-                  <h3 className="text-xl font-semibold text-background group-hover:text-primary transition">
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition flex flex-col justify-end p-3">
+                  <h3 className="text-base md:text-lg font-semibold text-white group-hover:text-primary transition">
                     {item.name}
                   </h3>
-                  <p className="mt-1 text-sm text-background/80 line-clamp-2">
+                  <p className="mt-1 text-sm text-gray-200 line-clamp-2">
                     {demoDescription}
                   </p>
-                  <Link
-                    to="/menu"
-                    className="mt-3 flex bg-primary text-white px-4 py-1.5 justify-center rounded-md shadow-md hover:bg-primary-hover transition"
-                  >
-                    View More
-                  </Link>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

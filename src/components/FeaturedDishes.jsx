@@ -1,33 +1,23 @@
-import api from "@/lib/api";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import SingleMenuItem from "./SingleMenuItem";
+import api from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import SingleMenuItem from './SingleMenuItem';
+import toast from 'react-hot-toast';
 
 const FeaturedDishes = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState(null);
 
   const fetchFeatured = async () => {
     try {
       setLoading(true);
-      setErr(null);
-      const res = await api.get("/menu-items/special", {
-        params: { flag: "isFeatured" },
+      const res = await api.get('/menu-items/special', {
+        params: { flag: 'isFeatured' },
       });
-      const data = (res?.data?.data || []).map((it) => ({
-        id: it._id,
-        title: it.name,
-        description: it.description,
-        image:
-          it.imageUrl || "https://via.placeholder.com/600x400?text=Featured",
-        price: it.price,
-        category:
-          typeof it.categoryId === "object" ? it.categoryId?.name : null,
-      }));
+      const data = res?.data?.data || [];
       setItems(data);
     } catch (e) {
-      setErr(e?.message || "Failed to load featured items.");
+      toast.error(e?.message || 'Failed to load featured items.');
     } finally {
       setLoading(false);
     }
@@ -47,34 +37,43 @@ const FeaturedDishes = () => {
           Handpicked specialties from our kitchen to delight your taste buds.
         </p>
 
-        {/* Loading state */}
-        {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-64 rounded-xl bg-gray-200 animate-pulse"
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Error state */}
-        {!loading && err && (
-          <div className="text-center text-red-600">{err}</div>
-        )}
-
         {/* Empty state */}
-        {!loading && !err && items.length === 0 && (
-          <div className="text-center text-gray-500">
-            No featured items right now.
+        {!loading && items.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 rounded-2xl border border-dashed border-gray-300 bg-gray-50 shadow-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 text-gray-400 mb-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              No Featured Items
+            </h3>
+            <p className="text-gray-500 max-w-md text-center mb-6">
+              Currently, we don’t have any featured dishes available. Check back
+              later for something delicious!
+            </p>
+            <Link
+              to="/menu"
+              className="px-6 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary/90 transition"
+            >
+              Explore Menu
+            </Link>
           </div>
         )}
 
         {/* Items */}
-        {!loading && !err && items.length > 0 && (
+        {!loading && items.length > 0 && (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {items.map((item) => (
+            {items.map(item => (
               <SingleMenuItem key={item.id} item={item} />
             ))}
           </div>

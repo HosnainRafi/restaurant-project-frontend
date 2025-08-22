@@ -1,38 +1,23 @@
-import { useEffect, useState } from "react";
-import api from "@/lib/api";
-import toast from "react-hot-toast";
-import SingleMenuItem from "./SingleMenuItem";
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+import SingleMenuItem from './SingleMenuItem';
 
 const ChefsRecommendations = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState(null);
 
   const fetchRecommendations = async () => {
     try {
       setLoading(true);
-      setErr(null);
-      const res = await api.get("/menu-items/special", {
-        params: { flag: "isChefsRecommendation" },
+      const res = await api.get('/menu-items/special', {
+        params: { flag: 'isChefsRecommendation' },
       });
 
-      // Normalize shape if SingleMenuItem expects certain keys
-      const data = (res?.data?.data || []).map((it) => ({
-        _id: it._id,
-        name: it.name,
-        description: it.description,
-        price: it.price, // cents (format inside SingleMenuItem)
-        imageUrl: it.imageUrl, // or fallback placeholder if needed
-        isAvailable: it.isAvailable,
-        categoryName:
-          typeof it.categoryId === "object" ? it.categoryId?.name : null,
-      }));
-
+      const data = res?.data?.data || [];
       setMenuItems(data);
     } catch (e) {
-      const msg = e?.message || "Failed to load recommendations.";
-      setErr(msg);
-      toast.error(msg);
+      toast.error(e?.message || 'Failed to load recommendations.');
     } finally {
       setLoading(false);
     }
@@ -53,30 +38,49 @@ const ChefsRecommendations = () => {
           experience.
         </p>
 
+        {/* Loading skeleton */}
         {loading && (
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-2">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-40 rounded-lg bg-gray-200 animate-pulse"
+                className="h-40 rounded-xl bg-gray-200 animate-pulse"
               />
             ))}
           </div>
         )}
 
-        {!loading && err && (
-          <div className="text-center text-red-600">{err}</div>
-        )}
-
-        {!loading && !err && menuItems.length === 0 && (
-          <div className="text-center text-gray-500">
-            No recommendations right now.
+        {/* Empty state */}
+        {!loading && menuItems.length === 0 && (
+          <div className="flex flex-col items-center justify-center text-center py-20">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-20 w-20 text-gray-400 mb-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+            <h3 className="text-2xl font-semibold text-gray-700 mb-2">
+              No Recommendations Yet
+            </h3>
+            <p className="text-gray-500 max-w-md">
+              Our chef is currently preparing something special for you. Please
+              check back later for exclusive recommendations.
+            </p>
           </div>
         )}
 
-        {!loading && !err && menuItems.length > 0 && (
+        {/* Items */}
+        {!loading && menuItems.length > 0 && (
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-2">
-            {menuItems.map((item) => (
+            {menuItems.map(item => (
               <SingleMenuItem key={item._id} item={item} />
             ))}
           </div>

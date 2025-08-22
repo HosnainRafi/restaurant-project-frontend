@@ -7,6 +7,7 @@ const SingleMenuItem = ({ item }) => {
 
   const handleAddToCart = () => {
     addItem(item);
+      console.log(item);
     toast.success(`${item.name} added to cart!`);
   };
   return (

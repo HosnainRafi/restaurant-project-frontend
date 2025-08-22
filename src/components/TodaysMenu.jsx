@@ -1,39 +1,23 @@
-import { useEffect, useState } from "react";
-import SingleMenuItem from "./SingleMenuItem";
-import api from "@/lib/api";
-import toast from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import SingleMenuItem from './SingleMenuItem';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const TodaysMenu = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState(null);
 
   const fetchTodaysSpecials = async () => {
     try {
       setLoading(true);
-      setErr(null);
-      // Use your backend special route
-      const res = await api.get("/menu-items/special", {
-        params: { flag: "isTodaysSpecial" },
+      const res = await api.get('/menu-items/special', {
+        params: { flag: 'isTodaysSpecial' },
       });
 
-      // Normalize to UI-friendly shape if needed
-      const data = (res?.data?.data || []).map((it) => ({
-        _id: it._id,
-        name: it.name,
-        description: it.description,
-        price: it.price, // cents
-        imageUrl: it.imageUrl,
-        isAvailable: it.isAvailable,
-        // support populated or id category
-        categoryName:
-          typeof it.categoryId === "object" ? it.categoryId?.name : null,
-      }));
-
+      const data = res?.data?.data || [];
       setMenuItems(data);
     } catch (e) {
-      setErr(e?.message || "Failed to load today’s specials.");
-      toast.error("Failed to load today’s specials.");
+      toast.error(e.message || 'Failed to load today’s specials.');
     } finally {
       setLoading(false);
     }
@@ -53,30 +37,28 @@ const TodaysMenu = () => {
           Handpicked dishes for today to delight your taste buds.
         </p>
 
-        {loading && (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-40 rounded-lg bg-gray-200 animate-pulse"
-              />
-            ))}
+        {/* Empty State */}
+        {!loading && menuItems.length === 0 && (
+          <div className="flex flex-col items-center justify-center p-10 bg-white rounded-2xl shadow-md border border-gray-200">
+            <img
+              src="https://illustrations.popsy.co/gray/no-data.svg"
+              alt="No specials"
+              className="w-40 h-40 mb-6 opacity-80"
+            />
+            <h3 className="text-xl font-semibold text-gray-700">
+              No Specials Available
+            </h3>
+            <p className="text-gray-500 mt-2 max-w-md text-center">
+              Our chefs are busy crafting new delights. Please check back later
+              for today’s special dishes!
+            </p>
           </div>
         )}
 
-        {!loading && err && (
-          <div className="text-center text-red-600">{err}</div>
-        )}
-
-        {!loading && !err && menuItems.length === 0 && (
-          <div className="text-center text-gray-500">
-            No specials for today.
-          </div>
-        )}
-
-        {!loading && !err && menuItems.length > 0 && (
+        {/* Specials Grid */}
+        {!loading && menuItems.length > 0 && (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {menuItems.map((item) => (
+            {menuItems.map(item => (
               <SingleMenuItem key={item._id} item={item} />
             ))}
           </div>
