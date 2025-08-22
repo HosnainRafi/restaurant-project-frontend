@@ -1,9 +1,10 @@
 import api from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import SingleMenuItem from "./SingleMenuItem";
 
-const FeaturedSection = () => {
-  const [items, setItems] = useState([]); // fetched featured items
+const FeaturedDishes = () => {
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
@@ -72,37 +73,9 @@ const FeaturedSection = () => {
 
         {/* Items */}
         {!loading && !err && items.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {items.map((item) => (
-              <div
-                key={item.id}
-                className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition"
-              >
-                <div className="overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-64 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-                    loading="lazy"
-                  />
-                </div>
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition flex flex-col justify-end p-4">
-                  <h3 className="text-xl font-semibold text-background group-hover:text-primary transition">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-background/80 line-clamp-2">
-                    {item.description}
-                  </p>
-                  <Link
-                    to="/menu"
-                    className="mt-3 flex bg-primary text-white px-4 py-1.5 justify-center rounded-md shadow-md hover:bg-primary-hover transition"
-                  >
-                    View More
-                  </Link>
-                </div>
-              </div>
+              <SingleMenuItem key={item._id} item={item} />
             ))}
           </div>
         )}
@@ -111,4 +84,4 @@ const FeaturedSection = () => {
   );
 };
 
-export default FeaturedSection;
+export default FeaturedDishes;

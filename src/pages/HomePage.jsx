@@ -1,5 +1,6 @@
 import ChefsRecommendations from '@/components/ChefsRecommendations';
-import FeaturedSection from '@/components/FeaturedSection';
+import FeaturedCategory from '@/components/FeaturedCategory';
+import FeaturedDishes from '@/components/FeaturedDishes';
 import HeroSection from '@/components/Hero';
 import OurChefs from '@/components/OurChefs';
 import Testimonials from '@/components/Testimonials';
@@ -10,7 +11,8 @@ const HomePage = () => {
   return (
     <div>
       <HeroSection />
-      <FeaturedSection />
+      <FeaturedCategory />
+      <FeaturedDishes />
       <TodaysMenu />
       <ChefsRecommendations />
       <Testimonials />

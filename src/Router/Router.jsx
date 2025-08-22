@@ -13,6 +13,7 @@ import ErrorPage from '@/pages/Error/Error';
 import MenuManagement from '@/pages/admin/MenuManagement';
 import AddMenuItem from '@/pages/admin/AddMenuItem';
 import AddChef from '@/pages/admin/AddChef';
+import AddFoodCategory from '@/pages/admin/AddFoodCategory';
 
 export const router = createBrowserRouter([
   {
@@ -91,7 +92,15 @@ export const router = createBrowserRouter([
         path: 'add-chef',
         element: (
           <ProtectedRoute>
-            <AddChef/>
+            <AddChef />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'add-food-category',
+        element: (
+          <ProtectedRoute>
+            <AddFoodCategory />
           </ProtectedRoute>
         ),
       },

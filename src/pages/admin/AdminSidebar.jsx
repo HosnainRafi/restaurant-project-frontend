@@ -8,6 +8,8 @@ import {
   FaPlusCircle,
 } from 'react-icons/fa';
 import { PiChefHatFill } from 'react-icons/pi';
+import { MdCategory } from 'react-icons/md';
+
 const AdminSidebar = () => {
   const activeLinkClass = 'bg-primary text-white rounded-lg shadow-md';
   const inactiveLinkClass =
@@ -95,6 +97,19 @@ const AdminSidebar = () => {
         >
           <PiChefHatFill className="text-lg" />
           Add New Chef
+        </NavLink>
+
+        {/* New Section: Add Food Category */}
+        <NavLink
+          to="/admin/add-food-category"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+              isActive ? activeLinkClass : inactiveLinkClass
+            }`
+          }
+        >
+          <MdCategory className="text-lg" />
+          Add Food Category
         </NavLink>
       </nav>
 
