@@ -64,7 +64,7 @@ const Navbar = ({ onCartClick }) => {
                     : "bg-primary text-white py-2 px-5 rounded-md shadow-md hover:bg-primary-hover transition"
                 }
               >
-                Admin Login
+                Login
               </NavLink>
             )}
           </div>
