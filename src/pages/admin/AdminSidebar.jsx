@@ -6,9 +6,12 @@ import {
   FaHome,
   FaSignOutAlt,
   FaPlusCircle,
+  FaUsers,
 } from 'react-icons/fa';
 import { PiChefHatFill } from 'react-icons/pi';
 import { MdCategory } from 'react-icons/md';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 const AdminSidebar = () => {
   const activeLinkClass = 'bg-primary text-white rounded-lg shadow-md';
@@ -86,7 +89,7 @@ const AdminSidebar = () => {
           Menu Management
         </NavLink>
 
-        {/* New Section: Add New Chef */}
+        {/* Add New Chef */}
         <NavLink
           to="/admin/add-chef"
           className={({ isActive }) =>
@@ -99,7 +102,7 @@ const AdminSidebar = () => {
           Add New Chef
         </NavLink>
 
-        {/* New Section: Add Food Category */}
+        {/* Add Food Category */}
         <NavLink
           to="/admin/add-food-category"
           className={({ isActive }) =>
@@ -111,11 +114,27 @@ const AdminSidebar = () => {
           <MdCategory className="text-lg" />
           Add Food Category
         </NavLink>
+
+        {/* ✅ New Manage Users */}
+        <NavLink
+          to="/admin/manage-users"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+              isActive ? activeLinkClass : inactiveLinkClass
+            }`
+          }
+        >
+          <FaUsers className="text-lg" />
+          Manage Users
+        </NavLink>
       </nav>
 
       {/* Logout Button */}
       <div className="p-4 border-t border-gray-200">
-        <button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition">
+        <button
+          onClick={() => signOut(auth)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition"
+        >
           <FaSignOutAlt />
           Logout
         </button>
