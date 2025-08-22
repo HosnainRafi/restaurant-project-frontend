@@ -1,10 +1,8 @@
-// src/pages/Dashboard/OrdersDashboard.jsx (or your path)
-
 import { useEffect, useState } from "react";
 import api from "../../lib/api";
 import toast from "react-hot-toast";
 import { connectOrdersSocket } from "@/lib/socket";
-// import { connectOrdersSocket } from "../../lib/socket"; // Import the new helper
+import { ImSpinner3 } from "react-icons/im";
 
 // This should come from your auth context in a real app
 const RESTAURANT_ID = "68a6a96187ed6561f8380f53";
@@ -25,7 +23,7 @@ const getStatusClass = (status) => {
   }
 };
 
-// Helper for enforcing valid status transitions
+// Helper for enforcing valid status transitions on the frontend (optional but good UX)
 const allowedNextStatus = (currentStatus) => {
   const transitions = {
     pending: ["pending", "confirmed", "cancelled"],
@@ -42,21 +40,10 @@ const OrdersDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // State for future filtering and pagination
-  const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("");
-  // ... add more state for sorting, etc.
-
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      // Example with future-ready query params
-      const response = await api.get("/orders", {
-        params: {
-          page,
-          status: statusFilter || undefined,
-        },
-      });
+      const response = await api.get("/orders");
       setOrders(response.data.data || []);
     } catch (error) {
       toast.error("Failed to fetch orders.");
@@ -66,16 +53,11 @@ const OrdersDashboard = () => {
     }
   };
 
-  // Initial data fetch
   useEffect(() => {
     fetchOrders();
-  }, [page, statusFilter]); // Refetch if filters change
 
-  // Real-time socket connection
-  useEffect(() => {
     const socket = connectOrdersSocket(RESTAURANT_ID);
-
-    socket.on("connect", () => console.log("✅ Socket connected"));
+    socket.on("connect", () => console.log("✅ Socket connected for orders"));
 
     socket.on("order:created", (newOrder) => {
       setOrders((prevOrders) => [newOrder, ...prevOrders]);
@@ -90,14 +72,12 @@ const OrdersDashboard = () => {
 
     socket.on("disconnect", () => console.log("❌ Socket disconnected"));
 
-    // Cleanup on component unmount
     return () => {
       socket.disconnect();
     };
   }, []);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
-    // 1. Optimistic UI update for instant feedback
     const originalOrders = [...orders];
     setOrders((currentOrders) =>
       currentOrders.map((o) =>
@@ -105,7 +85,6 @@ const OrdersDashboard = () => {
       )
     );
 
-    // 2. API call
     try {
       const promise = api.patch(`/orders/${orderId}`, { status: newStatus });
       await toast.promise(promise, {
@@ -113,10 +92,7 @@ const OrdersDashboard = () => {
         success: "Status updated!",
         error: "Update failed.",
       });
-      // The socket event will provide the final source of truth,
-      // so no need to call fetchOrders() here.
     } catch (error) {
-      // 3. Rollback on failure
       setOrders(originalOrders);
       console.error(error);
     }
@@ -124,93 +100,95 @@ const OrdersDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-gray-500">Loading orders...</div>
+      <div className="flex justify-center items-center h-64">
+        <ImSpinner3 className="animate-spin text-primary" size={40} />
+      </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
-      <h2 className="text-3xl font-bold text-primary mb-6 md:mb-10 text-center">
-        Manage Customer Orders
-      </h2>
-      <div className="bg-white shadow-lg rounded-xl overflow-x-auto">
-        <table className="min-w-full table-auto divide-y divide-gray-200">
-          <thead className="bg-primary/10">
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Live Orders Dashboard</h1>
+      <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-primary uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Order #
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-primary uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Customer
               </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-primary uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Total
               </th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-primary uppercase">
+              {/* --- NEW COLUMN HEADER --- */}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Payment
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Status
               </th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-primary uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="bg-white divide-y divide-gray-200">
             {orders.map((order) => (
-              <tr key={order._id} className="hover:bg-gray-50 transition">
-                <td className="px-4 py-3 font-mono text-gray-800">
+              <tr key={order._id}>
+                <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
                   {order.orderNumber}
                 </td>
-                <td className="px-4 py-3 text-gray-600">
-                  <p className="font-semibold">
-                    {order.customer?.name || "N/A"}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {order.customer?.phone || "N/A"}
-                  </p>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {order.customer?.name}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {order.customer?.phone}
+                  </div>
                 </td>
-                <td className="px-4 py-3 font-semibold text-gray-800">
+                <td className="px-6 py-4 whitespace-nowrap font-semibold">
                   ${(order.total / 100).toFixed(2)}
                 </td>
-                <td className="px-4 py-3 text-center">
+
+                {/* --- NEW TABLE CELL FOR PAYMENT STATUS --- */}
+                <td className="px-6 py-4 whitespace-nowrap">
                   <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${getStatusClass(
+                    className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      order.paymentStatus === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {order.paymentStatus}
+                  </span>
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(
                       order.status
                     )}`}
                   >
                     {order.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <select
                     value={order.status}
                     onChange={(e) =>
                       handleUpdateStatus(order._id, e.target.value)
                     }
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:ring-primary focus:border-primary outline-none transition cursor-pointer"
+                    className="p-2 border rounded-md bg-white"
                     disabled={
                       order.status === "completed" ||
                       order.status === "cancelled"
                     }
                   >
-                    {[
-                      "pending",
-                      "confirmed",
-                      "preparing",
-                      "ready",
-                      "completed",
-                      "cancelled",
-                    ].map((statusOption) => (
-                      <option
-                        key={statusOption}
-                        value={statusOption}
-                        disabled={
-                          !allowedNextStatus(order.status).includes(
-                            statusOption
-                          )
-                        }
-                      >
-                        {statusOption.charAt(0).toUpperCase() +
-                          statusOption.slice(1)}
+                    {allowedNextStatus(order.status).map((statusOption) => (
+                      <option key={statusOption} value={statusOption}>
+                        {statusOption}
                       </option>
                     ))}
                   </select>
