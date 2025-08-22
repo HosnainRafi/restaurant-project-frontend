@@ -4,7 +4,7 @@ import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import MenuPage from "@/pages/MenuPage";
 import ReservationPage from "@/pages/ReservationPage";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import ProtectedRoute from "./../components/ProtectedRoute";
 import AdminLayout from "@/Layout/AdminLayout";
 import ReservationsDashboard from "@/pages/admin/ReservationsDashboard";
@@ -16,46 +16,49 @@ import AddChef from "@/pages/admin/AddChef";
 import AddFoodCategory from "@/pages/admin/AddFoodCategory";
 import Register from "@/pages/Register";
 import ManageUsers from "@/pages/admin/ManageUsers";
+import MyOrdersPage from "@/pages/customer/MyOrdersPage";
+import ProfilePage from "@/pages/customer/ProfilePage";
+import CustomerDashboardLayout from "@/pages/customer/CustomerDashboardLayout";
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: '/',
+        path: "/",
         element: <HomePage />,
       },
       {
-        path: '/menu',
+        path: "/menu",
         element: <MenuPage />,
       },
       {
-        path: '/reservations',
+        path: "/reservations",
         element: <ReservationPage />,
       },
       {
-        path: '/login',
+        path: "/login",
         element: <LoginPage />,
       },
       {
-        path: '/register',
+        path: "/register",
         element: <Register />,
       },
       {
-        path: '/checkout',
+        path: "/checkout",
         element: <CheckoutPage />,
       },
     ],
   },
   {
-    path: '/admin',
+    path: "/admin",
     element: <AdminLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: '',
+        path: "",
         element: (
           <ProtectedRoute>
             <ReservationsDashboard />
@@ -63,7 +66,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'reservations',
+        path: "reservations",
         element: (
           <ProtectedRoute>
             <ReservationsDashboard />
@@ -71,7 +74,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'orders',
+        path: "orders",
         element: (
           <ProtectedRoute>
             <OrdersDashboard />
@@ -79,7 +82,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'add-menu-item',
+        path: "add-menu-item",
         element: (
           <ProtectedRoute>
             <AddMenuItem />
@@ -87,7 +90,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'menu-management',
+        path: "menu-management",
         element: (
           <ProtectedRoute>
             <MenuManagement />
@@ -95,7 +98,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'add-chef',
+        path: "add-chef",
         element: (
           <ProtectedRoute>
             <AddChef />
@@ -103,7 +106,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'add-food-category',
+        path: "add-food-category",
         element: (
           <ProtectedRoute>
             <AddFoodCategory />
@@ -111,13 +114,27 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'manage-users',
+        path: "manage-users",
         element: (
           <ProtectedRoute>
             <ManageUsers />
           </ProtectedRoute>
         ),
       },
+    ],
+  },
+
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute allowedRoles={["customer"]}>
+        <CustomerDashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="my-orders" replace /> },
+      { path: "my-orders", element: <MyOrdersPage /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 ]);

@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
           // Fetch the user's profile from your backend
-          const response = await api.get("/users/me");
+          const response = await api.get("/auth/me");
           setDbUser(response.data.data);
         } catch (error) {
           console.error("Failed to fetch user profile from DB:", error);

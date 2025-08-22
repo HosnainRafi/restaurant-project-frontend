@@ -10,15 +10,17 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import CheckoutForm from "../components/CheckoutForm";
 import { ImSpinner3 } from "react-icons/im";
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const TAX_RATE = 0.08;
 
 const CheckoutPage = () => {
   const { items, clearCart } = useCart();
+  const { dbUser } = useAuth(); // Get the logged-in user's profile
   const navigate = useNavigate();
   const [clientSecret, setClientSecret] = useState("");
-  const [order, setOrder] = useState(null); // State to hold the created order
+  const [order, setOrder] = useState(null);
 
   const {
     register,
@@ -30,7 +32,6 @@ const CheckoutPage = () => {
     defaultValues: { type: "pickup", paymentMethod: "card" },
   });
 
-  // Calculate totals in cents for backend accuracy
   const subtotal = useMemo(
     () => items.reduce((total, item) => total + item.price * item.quantity, 0),
     [items]
@@ -41,7 +42,6 @@ const CheckoutPage = () => {
   const paymentMethod = watch("paymentMethod");
   const orderType = watch("type");
 
-  // Step 1: Create the order in the database first
   const handleCreateOrder = async (formData) => {
     const orderData = {
       customer: {
@@ -49,8 +49,12 @@ const CheckoutPage = () => {
         phone: formData.phone,
         email: formData.email,
         address: orderType === "delivery" ? formData.address : undefined,
+        // --- NEW: Add the customer's UID if they are logged in ---
+        uid: dbUser?.uid,
       },
       items: items.map((item) => ({
+        // --- THIS IS THE FIX ---
+        // Map the item's `_id` from the cart to the `menuItemId` expected by the backend.
         menuItemId: item._id,
         quantity: item.quantity,
       })),
@@ -61,7 +65,7 @@ const CheckoutPage = () => {
     toast.promise(promise, {
       loading: "Placing your order...",
       success: "Order placed! Finalizing...",
-      error: "Failed to place order. Please try again.",
+      error: (err) => err.response?.data?.message || "Failed to place order.",
     });
 
     try {
@@ -69,7 +73,6 @@ const CheckoutPage = () => {
       const newOrder = res.data.data;
       setOrder(newOrder);
 
-      // If paying by card, proceed to Stripe. Otherwise, the order is complete.
       if (formData.paymentMethod === "card") {
         initializePayment(newOrder);
       } else {
@@ -78,11 +81,10 @@ const CheckoutPage = () => {
         navigate("/");
       }
     } catch (error) {
-      console.error("Failed to create order:", error);
+      console.error("Failed to create order:", error.response?.data || error);
     }
   };
 
-  // Step 2: Get the Stripe client secret for the created order
   const initializePayment = async (createdOrder) => {
     try {
       const res = await api.post("/payment/create-payment-intent", {
@@ -96,10 +98,7 @@ const CheckoutPage = () => {
     }
   };
 
-  // Step 3: Called after a successful card payment
   const handleSuccessfulCheckout = async () => {
-    // The backend webhook has already marked the order as 'paid'.
-    // We just need to clear the cart and redirect the user.
     clearCart();
     navigate("/");
   };
@@ -118,7 +117,6 @@ const CheckoutPage = () => {
     );
   }
 
-  // If a clientSecret exists, it means we are ready for payment.
   if (clientSecret && order) {
     return (
       <div className="max-w-xl mx-auto p-8 my-10 bg-white rounded-lg shadow-xl">
@@ -140,7 +138,6 @@ const CheckoutPage = () => {
 
   return (
     <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 py-12">
-      {/* Customer Details Form */}
       <div className="bg-white p-8 rounded-2xl shadow-lg">
         <h2 className="text-2xl font-semibold mb-6">Your Details</h2>
         <form onSubmit={handleSubmit(handleCreateOrder)} className="space-y-5">
@@ -227,7 +224,6 @@ const CheckoutPage = () => {
         </form>
       </div>
 
-      {/* Order Summary */}
       <div className="bg-white p-8 rounded-2xl shadow-lg h-fit">
         <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
         <div className="space-y-4">
