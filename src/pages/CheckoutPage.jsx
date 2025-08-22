@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,7 @@ import api from "../lib/api";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import CheckoutForm from "../components/CheckoutForm";
+import { ImSpinner3 } from "react-icons/im";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const TAX_RATE = 0.08;
@@ -17,165 +18,246 @@ const CheckoutPage = () => {
   const { items, clearCart } = useCart();
   const navigate = useNavigate();
   const [clientSecret, setClientSecret] = useState("");
+  const [order, setOrder] = useState(null); // State to hold the created order
 
   const {
     register,
     handleSubmit,
-    getValues,
-    trigger,
-    formState: { errors, isValid },
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(checkoutSchema),
-    mode: "onChange", // validate on change
-    defaultValues: { type: "pickup" },
+    defaultValues: { type: "pickup", paymentMethod: "card" },
   });
 
-  // subtotal in $
+  // Calculate totals in cents for backend accuracy
   const subtotal = useMemo(
-    () => items.reduce((t, i) => t + i.price * i.quantity, 0),
+    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
     [items]
   );
-  const totalInCents = Math.round(subtotal * (1 + TAX_RATE) * 100);
+  const tax = Math.round(subtotal * TAX_RATE);
+  const total = subtotal + tax;
 
-  // fetch Stripe clientSecret
-  useEffect(() => {
-    if (totalInCents > 0) {
-      api
-        .post("/payment/create-payment-intent", {
-          amount: totalInCents,
-          currency: "usd",
-        })
-        .then((res) => setClientSecret(res.data.data.clientSecret))
-        .catch(() => toast.error("Could not initialize payment."));
-    }
-  }, [totalInCents]);
+  const paymentMethod = watch("paymentMethod");
+  const orderType = watch("type");
 
-  // place order after payment
-  const handlePlaceOrder = async () => {
-    const data = getValues();
+  // Step 1: Create the order in the database first
+  const handleCreateOrder = async (formData) => {
     const orderData = {
-      customer: { name: data.name, phone: data.phone, email: data.email },
-      items: items.map((i) => ({ menuItemId: i._id, quantity: i.quantity })),
-      type: data.type,
-      total: totalInCents,
-      currency: "usd",
+      customer: {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: orderType === "delivery" ? formData.address : undefined,
+      },
+      items: items.map((item) => ({
+        menuItemId: item._id,
+        quantity: item.quantity,
+      })),
+      type: formData.type,
     };
 
     const promise = api.post("/orders", orderData);
-
     toast.promise(promise, {
-      loading: "Saving your order...",
-      success: "Order placed successfully! 🎉",
-      error: "Could not save order.",
+      loading: "Placing your order...",
+      success: "Order placed! Finalizing...",
+      error: "Failed to place order. Please try again.",
     });
 
     try {
-      await promise;
-      clearCart();
-      navigate("/");
-    } catch {
-      // Error is handled by toast.promise above
+      const res = await promise;
+      const newOrder = res.data.data;
+      setOrder(newOrder);
+
+      // If paying by card, proceed to Stripe. Otherwise, the order is complete.
+      if (formData.paymentMethod === "card") {
+        initializePayment(newOrder);
+      } else {
+        toast.success("Your order is confirmed! We'll see you soon.");
+        clearCart();
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Failed to create order:", error);
     }
   };
 
+  // Step 2: Get the Stripe client secret for the created order
+  const initializePayment = async (createdOrder) => {
+    try {
+      const res = await api.post("/payment/create-payment-intent", {
+        amount: createdOrder.total,
+        orderId: createdOrder._id,
+      });
+      setClientSecret(res.data.data.clientSecret);
+    } catch (err) {
+      toast.error("Could not initialize payment module.");
+      console.error(err);
+    }
+  };
+
+  // Step 3: Called after a successful card payment
+  const handleSuccessfulCheckout = async () => {
+    // The backend webhook has already marked the order as 'paid'.
+    // We just need to clear the cart and redirect the user.
+    clearCart();
+    navigate("/");
+  };
+
+  if (!items.length) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-bold">Your cart is empty.</h2>
+        <button
+          onClick={() => navigate("/menu")}
+          className="mt-4 bg-primary text-white py-2 px-5 rounded-lg"
+        >
+          Browse Menu
+        </button>
+      </div>
+    );
+  }
+
+  // If a clientSecret exists, it means we are ready for payment.
+  if (clientSecret && order) {
+    return (
+      <div className="max-w-xl mx-auto p-8 my-10 bg-white rounded-lg shadow-xl">
+        <h2 className="text-3xl font-bold mb-2 text-center">
+          Complete Your Payment
+        </h2>
+        <p className="text-center text-gray-500 mb-6">
+          Order #{order.orderNumber}
+        </p>
+        <Elements options={{ clientSecret }} stripe={stripePromise}>
+          <CheckoutForm
+            clientSecret={clientSecret}
+            onSuccessfulCheckout={handleSuccessfulCheckout}
+          />
+        </Elements>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-center mb-8">Checkout</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Left side - form + payment */}
-        <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-semibold mb-6">1. Your Details</h2>
-          <form className="space-y-5">
-            <div>
-              <label className="block font-medium mb-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                {...register("name")}
-                onBlur={() => trigger("name")}
-                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-200"
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block font-medium mb-1">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                {...register("phone")}
-                onBlur={() => trigger("phone")}
-                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-200"
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-sm">{errors.phone.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block font-medium mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                {...register("email")}
-                onBlur={() => trigger("email")}
-                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-green-200"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
-              )}
-            </div>
-          </form>
+    <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 py-12">
+      {/* Customer Details Form */}
+      <div className="bg-white p-8 rounded-2xl shadow-lg">
+        <h2 className="text-2xl font-semibold mb-6">Your Details</h2>
+        <form onSubmit={handleSubmit(handleCreateOrder)} className="space-y-5">
+          <input
+            {...register("name")}
+            placeholder="Full Name"
+            className="w-full border rounded-lg px-3 py-2"
+          />
+          {errors.name && (
+            <p className="text-red-500 text-sm">{errors.name.message}</p>
+          )}
+          <input
+            {...register("phone")}
+            placeholder="Phone Number"
+            className="w-full border rounded-lg px-3 py-2"
+          />
+          {errors.phone && (
+            <p className="text-red-500 text-sm">{errors.phone.message}</p>
+          )}
 
-          <h2 className="text-2xl font-semibold mt-10 mb-6">2. Payment</h2>
-          {clientSecret ? (
-            <Elements
-              stripe={stripePromise}
-              options={{ clientSecret, appearance: { theme: "stripe" } }}
+          <select
+            {...register("type")}
+            className="w-full border rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="pickup">Pickup</option>
+            <option value="delivery">Delivery</option>
+          </select>
+
+          {orderType === "delivery" && (
+            <div>
+              <input
+                {...register("address")}
+                placeholder="Full Delivery Address"
+                className="w-full border rounded-lg px-3 py-2"
+              />
+              {errors.address && (
+                <p className="text-red-500 text-sm">{errors.address.message}</p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Payment Method</h3>
+            <div className="space-y-3">
+              <label className="flex items-center p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                <input
+                  type="radio"
+                  value="card"
+                  {...register("paymentMethod")}
+                  className="mr-3"
+                />
+                Pay with Card
+              </label>
+              <label className="flex items-center p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                <input
+                  type="radio"
+                  value="pickup"
+                  {...register("paymentMethod")}
+                  className="mr-3"
+                />
+                Pay at Pickup
+              </label>
+            </div>
+            {errors.paymentMethod && (
+              <p className="text-red-500 text-sm mt-2">
+                {errors.paymentMethod.message}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-primary text-white py-3 px-5 rounded-lg shadow-md hover:bg-primary-hover transition flex justify-center items-center"
+          >
+            {isSubmitting ? (
+              <ImSpinner3 className="animate-spin" size={24} />
+            ) : paymentMethod === "card" ? (
+              "Continue to Payment"
+            ) : (
+              "Confirm Order"
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Order Summary */}
+      <div className="bg-white p-8 rounded-2xl shadow-lg h-fit">
+        <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
+        <div className="space-y-4">
+          {items.map((item) => (
+            <div
+              key={item._id}
+              className="flex justify-between items-center border-b pb-2"
             >
-              <CheckoutForm
-                clientSecret={clientSecret}
-                onSuccessfulCheckout={handleSubmit(handlePlaceOrder)}
-                isFormValid={isValid}
-              />
-            </Elements>
-          ) : (
-            <p className="text-gray-500">Loading payment form…</p>
-          )}
-        </div>
-
-        {/* Right side - summary */}
-        <div className="bg-white p-8 rounded-2xl shadow-lg h-fit">
-          <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
-          {items.length === 0 ? (
-            <p className="text-gray-500">Your cart is empty.</p>
-          ) : (
-            <div className="space-y-4">
-              {items.map((i) => (
-                <div key={i._id} className="flex justify-between border-b pb-2">
-                  <span>
-                    {i.name} × {i.quantity}
-                  </span>
-                  <span>${(i.price * i.quantity).toFixed(2)}</span>
-                </div>
-              ))}
-              <div className="flex justify-between font-semibold">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax ({TAX_RATE * 100}%)</span>
-                <span>${(subtotal * TAX_RATE).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span>${(subtotal * (1 + TAX_RATE)).toFixed(2)}</span>
-              </div>
+              <span className="font-medium">
+                {item.name} &times; {item.quantity}
+              </span>
+              <span className="text-gray-700">
+                ${((item.price * item.quantity) / 100).toFixed(2)}
+              </span>
             </div>
-          )}
+          ))}
+        </div>
+        <div className="mt-6 pt-4 border-t space-y-2 font-semibold">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>${(subtotal / 100).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Tax</span>
+            <span>${(tax / 100).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-xl font-bold text-primary">
+            <span>Total</span>
+            <span>${(total / 100).toFixed(2)}</span>
+          </div>
         </div>
       </div>
     </div>

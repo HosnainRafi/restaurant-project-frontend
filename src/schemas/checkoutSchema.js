@@ -9,4 +9,7 @@ export const checkoutSchema = z.object({
     .min(10, "A valid delivery address is required")
     .optional(),
   type: z.enum(["pickup", "delivery"]),
+  paymentMethod: z.enum(["card", "pickup"], {
+    required_error: "Please select a payment method",
+  }),
 });
