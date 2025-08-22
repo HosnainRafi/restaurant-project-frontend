@@ -15,6 +15,9 @@ const MenuDashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Image file for create flow
+  const [imageFile, setImageFile] = useState(null);
+
   const {
     register,
     handleSubmit,
@@ -50,19 +53,72 @@ const MenuDashboard = () => {
     fetchData();
   }, []);
 
+  // Upload image to imgbb and return URL
+  const uploadToImgbb = async (file) => {
+    if (!file) return null;
+    const API_KEY = import.meta.env.VITE_IMGBB_KEY;
+    if (!API_KEY) throw new Error("Missing VITE_IMGBB_KEY");
+
+    const form = new FormData();
+    // imgbb accepts file blobs directly under 'image'
+    form.append("image", file);
+
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) throw new Error("Image upload failed");
+
+    const json = await res.json();
+    // Prefer data.url; fallback to display_url
+    return json?.data?.url || json?.data?.display_url || null;
+  };
+
   const onSubmit = async (data) => {
     try {
-      const promise = api.post("/menu-items", data);
+      let imageUrl = null;
+
+      // Optional validations
+      if (imageFile) {
+        if (imageFile.size > 5 * 1024 * 1024) {
+          toast.error("Max 5MB image size");
+          return;
+        }
+        if (!/^image\//.test(imageFile.type)) {
+          toast.error("Invalid file type");
+          return;
+        }
+
+        const uploading = uploadToImgbb(imageFile);
+        toast.promise(uploading, {
+          loading: "Uploading image...",
+          success: "Image uploaded!",
+          error: "Image upload failed.",
+        });
+        imageUrl = await uploading;
+      }
+
+      const payload = {
+        ...data,
+        ...(imageUrl ? { imageUrl } : {}),
+      };
+
+      const promise = api.post("/menu-items", payload);
       toast.promise(promise, {
         loading: "Adding new item...",
         success: "Menu item added successfully!",
         error: "Failed to add item.",
       });
-      await promise;
+
+      const createdRes = await promise;
+
+      // Optimistic prepend then sync
+      setMenuItems((prev) => [createdRes.data.data, ...prev]);
       reset();
+      setImageFile(null);
       fetchData();
     } catch (error) {
-      // toast already handled
+      // toast already handled via promise
     }
   };
 
@@ -77,7 +133,7 @@ const MenuDashboard = () => {
     try {
       await promise;
       setMenuItems((prev) => prev.filter((item) => item._id !== itemId));
-    } catch (error) {
+    } catch {
       // toast already handled
     }
   };
@@ -87,9 +143,30 @@ const MenuDashboard = () => {
     setIsEditModalOpen(true);
   };
 
+  // If you want to support replacing the image in the edit modal:
+  // - Add a file input in EditMenuItemForm (e.g., name="imageFile")
+  // - Pass back a File in data.imageFile if selected
   const handleEditSubmit = async (data) => {
     if (!selectedItem) return;
-    const promise = api.patch(`/menu-items/${selectedItem._id}`, data);
+
+    // Example pattern to support optional new image in edit form:
+    // let newImageUrl = null;
+    // if (data?.imageFile instanceof File) {
+    //   const uploading = uploadToImgbb(data.imageFile);
+    //   toast.promise(uploading, {
+    //     loading: "Uploading image...",
+    //     success: "Image uploaded!",
+    //     error: "Image upload failed.",
+    //   });
+    //   newImageUrl = await uploading;
+    // }
+
+    const payload = {
+      ...data,
+      // imageUrl: newImageUrl ?? data.imageUrl, // keep existing if none uploaded
+    };
+
+    const promise = api.patch(`/menu-items/${selectedItem._id}`, payload);
     toast.promise(promise, {
       loading: "Updating item...",
       success: "Item updated successfully!",
@@ -104,7 +181,7 @@ const MenuDashboard = () => {
       );
       setIsEditModalOpen(false);
       setSelectedItem(null);
-    } catch (error) {
+    } catch {
       // toast already handled
     }
   };
@@ -217,6 +294,29 @@ const MenuDashboard = () => {
             )}
           </div>
 
+          {/* Image upload */}
+          <div>
+            <label className="block text-gray-700 mb-1 font-medium">
+              Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <p className="text-xs text-gray-500 mt-1">Max ~5MB. JPG/PNG.</p>
+            {imageFile && (
+              <div className="mt-2">
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="preview"
+                  className="h-24 w-24 object-cover rounded"
+                />
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -231,11 +331,12 @@ const MenuDashboard = () => {
           </div>
 
           {/* New Flag Checkboxes */}
-          {/* <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="isFeatured"
               {...register("isFeatured")}
+              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
             />
             <label htmlFor="isFeatured">Featured</label>
           </div>
@@ -245,8 +346,11 @@ const MenuDashboard = () => {
               type="checkbox"
               id="isChefsRecommendation"
               {...register("isChefsRecommendation")}
+              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
             />
-            <label htmlFor="isChefsRecommendation">Chef's Recommendation</label>
+            <label htmlFor="isChefsRecommendation">
+              Chef&apos;s Recommendation
+            </label>
           </div>
 
           <div className="flex items-center gap-2">
@@ -254,9 +358,10 @@ const MenuDashboard = () => {
               type="checkbox"
               id="isTodaysSpecial"
               {...register("isTodaysSpecial")}
+              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
             />
-            <label htmlFor="isTodaysSpecial">Today's Special</label>
-          </div> */}
+            <label htmlFor="isTodaysSpecial">Today&apos;s Special</label>
+          </div>
 
           <button
             type="submit"
