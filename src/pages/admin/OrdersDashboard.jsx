@@ -3,6 +3,7 @@ import api from "../../lib/api";
 import toast from "react-hot-toast";
 import { connectOrdersSocket } from "@/lib/socket";
 import { ImSpinner3 } from "react-icons/im";
+import { useAuth } from "@/hooks/useAuth"; // 👈 1. Import the useAuth hook
 
 // This should come from your auth context in a real app
 const RESTAURANT_ID = "68a6a96187ed6561f8380f53";
@@ -23,8 +24,8 @@ const getStatusClass = (status) => {
   }
 };
 
-// Helper for enforcing valid status transitions on the frontend (optional but good UX)
-const allowedNextStatus = (currentStatus) => {
+// --- UPDATED: Frontend State Machine is now role-aware ---
+const allowedNextStatus = (currentStatus, userRole) => {
   const transitions = {
     pending: ["pending", "confirmed", "cancelled"],
     confirmed: ["confirmed", "preparing", "cancelled"],
@@ -33,12 +34,27 @@ const allowedNextStatus = (currentStatus) => {
     completed: ["completed"],
     cancelled: ["cancelled"],
   };
-  return transitions[currentStatus] || [currentStatus];
+
+  const options = transitions[currentStatus] || [currentStatus];
+
+  // If the user tries to cancel an order in preparation, check their role
+  // This mirrors the backend logic for a great UX.
+  if (
+    (currentStatus === "preparing" || currentStatus === "ready") &&
+    userRole !== "manager" &&
+    userRole !== "admin"
+  ) {
+    // If the user is not a manager/admin, remove 'cancelled' from the available options.
+    return options.filter((opt) => opt !== "cancelled");
+  }
+
+  return options;
 };
 
 const OrdersDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth(); // 👈 2. Get the authenticated user object
 
   const fetchOrders = async () => {
     try {
@@ -79,6 +95,7 @@ const OrdersDashboard = () => {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     const originalOrders = [...orders];
+
     setOrders((currentOrders) =>
       currentOrders.map((o) =>
         o._id === orderId ? { ...o, status: newStatus } : o
@@ -86,15 +103,14 @@ const OrdersDashboard = () => {
     );
 
     try {
-      const promise = api.patch(`/orders/${orderId}`, { status: newStatus });
-      await toast.promise(promise, {
-        loading: "Updating status...",
-        success: "Status updated!",
-        error: "Update failed.",
-      });
+      await api.patch(`/orders/${orderId}`, { status: newStatus });
+      toast.success("Status updated successfully!");
     } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "An unknown error occurred.";
+      toast.error(errorMessage);
       setOrders(originalOrders);
-      console.error(error);
+      console.error("Failed to update status:", error.response?.data || error);
     }
   };
 
@@ -111,6 +127,7 @@ const OrdersDashboard = () => {
       <h1 className="text-3xl font-bold mb-6">Live Orders Dashboard</h1>
       <div className="bg-white shadow-md rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
+          {/* ... table headers ... */}
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -122,7 +139,6 @@ const OrdersDashboard = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Total
               </th>
-              {/* --- NEW COLUMN HEADER --- */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Payment
               </th>
@@ -151,8 +167,6 @@ const OrdersDashboard = () => {
                 <td className="px-6 py-4 whitespace-nowrap font-semibold">
                   ${(order.total / 100).toFixed(2)}
                 </td>
-
-                {/* --- NEW TABLE CELL FOR PAYMENT STATUS --- */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -164,7 +178,6 @@ const OrdersDashboard = () => {
                     {order.paymentStatus}
                   </span>
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(
@@ -180,17 +193,21 @@ const OrdersDashboard = () => {
                     onChange={(e) =>
                       handleUpdateStatus(order._id, e.target.value)
                     }
-                    className="p-2 border rounded-md bg-white"
+                    className="p-2 border rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                     disabled={
                       order.status === "completed" ||
                       order.status === "cancelled"
                     }
                   >
-                    {allowedNextStatus(order.status).map((statusOption) => (
-                      <option key={statusOption} value={statusOption}>
-                        {statusOption}
-                      </option>
-                    ))}
+                    {/* 👇 3. Use the role-aware helper to generate the correct options */}
+                    {allowedNextStatus(order.status, user?.role).map(
+                      (statusOption) => (
+                        <option key={statusOption} value={statusOption}>
+                          {statusOption.charAt(0).toUpperCase() +
+                            statusOption.slice(1)}
+                        </option>
+                      )
+                    )}
                   </select>
                 </td>
               </tr>
