@@ -7,7 +7,7 @@ import {
   FaSignOutAlt,
   FaPlusCircle,
 } from 'react-icons/fa';
-
+import { PiChefHatFill } from 'react-icons/pi';
 const AdminSidebar = () => {
   const activeLinkClass = 'bg-primary text-white rounded-lg shadow-md';
   const inactiveLinkClass =
@@ -82,6 +82,19 @@ const AdminSidebar = () => {
         >
           <FaUtensils className="text-lg" />
           Menu Management
+        </NavLink>
+
+        {/* New Section: Add New Chef */}
+        <NavLink
+          to="/admin/add-chef"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+              isActive ? activeLinkClass : inactiveLinkClass
+            }`
+          }
+        >
+          <PiChefHatFill className="text-lg" />
+          Add New Chef
         </NavLink>
       </nav>
 

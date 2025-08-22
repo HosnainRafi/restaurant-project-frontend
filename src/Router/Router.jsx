@@ -12,6 +12,7 @@ import OrdersDashboard from '@/pages/admin/OrdersDashboard';
 import ErrorPage from '@/pages/Error/Error';
 import MenuManagement from '@/pages/admin/MenuManagement';
 import AddMenuItem from '@/pages/admin/AddMenuItem';
+import AddChef from '@/pages/admin/AddChef';
 
 export const router = createBrowserRouter([
   {
@@ -83,6 +84,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MenuManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'add-chef',
+        element: (
+          <ProtectedRoute>
+            <AddChef/>
           </ProtectedRoute>
         ),
       },
