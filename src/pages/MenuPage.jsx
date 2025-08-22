@@ -57,8 +57,8 @@ const MenuPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6">
-      <h2 className="text-3xl md:text-4xl font-bold text-primary text-center my-4 md:my-8">
+    <div className="max-w-7xl mx-auto px-6 pt-24">
+      <h2 className="text-3xl md:text-4xl font-bold text-primary text-center">
         Our Menu
       </h2>
 

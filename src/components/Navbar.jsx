@@ -13,12 +13,18 @@ const Navbar = ({ onCartClick }) => {
   const role = useRole();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef();
   const navigate = useNavigate();
-  const navLinkClass = ({ isActive }) =>
-    isActive
-      ? 'text-primary font-semibold border-b-2 border-primary pb-1 transition'
-      : 'text-text-secondary hover:text-primary transition';
+
+  // Dynamic nav link class
+  const navLinkClass = ({ isActive }) => {
+    const baseColor = scrolled ? 'text-text-secondary' : 'text-white';
+    const activeColor = scrolled ? 'text-primary' : 'text-primary';
+    return isActive
+      ? `${activeColor} font-semibold border-b-2 border-primary pb-1 transition`
+      : `${baseColor} hover:text-primary transition`;
+  };
 
   const handleLogout = () => {
     signOut(auth);
@@ -33,16 +39,31 @@ const Navbar = ({ onCartClick }) => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
+  const linkTextColor = scrolled ? 'h-6 w-6 text-text-secondary' : 'h-6 w-6 text-white';
+
   return (
-    <nav className="bg-background shadow-lg">
+    <nav
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white/50 backdrop-blur-md shadow-md' : 'bg-transparent'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-extrabold tracking-wide text-primary hover:text-primary-hover transition"
+          className={`text-2xl font-extrabold tracking-wide transition ${
+            scrolled ? 'text-primary' : 'text-white'
+          }`}
         >
           Urban Grill
         </Link>
@@ -56,11 +77,10 @@ const Navbar = ({ onCartClick }) => {
             Menu
           </NavLink>
 
-          <CartIcon onClick={onCartClick} />
+          <CartIcon  onClick={onCartClick} color={linkTextColor} />
 
           {user ? (
             <div className="relative" ref={dropdownRef}>
-              {/* Profile Image */}
               <img
                 src={dbUser?.photoURL || '/default-avatar.png'}
                 alt="Profile"
@@ -68,9 +88,8 @@ const Navbar = ({ onCartClick }) => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               />
 
-              {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl z-50 border border-gray-100">
+                <div className="absolute right-0 mt-3 w-56 bg-white/80 backdrop-blur-md rounded-xl shadow-2xl z-50 border border-gray-100">
                   {role === 'admin' || role === 'manager' ? (
                     <NavLink
                       to="/admin/dashboard/orders"
@@ -133,7 +152,7 @@ const Navbar = ({ onCartClick }) => {
         <div className="md:hidden flex items-center">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="text-primary text-2xl"
+            className={`text-2xl transition ${linkTextColor}`}
           >
             {mobileMenuOpen ? <FiX /> : <FiMenu />}
           </button>
@@ -142,7 +161,7 @@ const Navbar = ({ onCartClick }) => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background px-6 pb-4 space-y-4 border-t border-gray-200">
+        <div className="md:hidden bg-white/80 backdrop-blur-md px-6 pb-4 space-y-4 border-t border-gray-200">
           <NavLink
             to="/"
             className={navLinkClass}

@@ -1,6 +1,6 @@
 import { useCart } from "../hooks/useCart";
 
-const CartIcon = ({ onClick }) => {
+const CartIcon = ({ onClick, color }) => {
   const { items } = useCart();
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -8,7 +8,7 @@ const CartIcon = ({ onClick }) => {
     <button onClick={onClick} className="relative">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6 text-gray-600"
+        className={color}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
