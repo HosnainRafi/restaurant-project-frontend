@@ -1,16 +1,16 @@
-import { NavLink, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { auth } from '../lib/firebase';
-import { signOut } from 'firebase/auth';
-import CartIcon from './CartIcon';
+import { NavLink, Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { auth } from "../lib/firebase";
+import { signOut } from "firebase/auth";
+import CartIcon from "./CartIcon";
 
 const Navbar = ({ onCartClick }) => {
   const { user } = useAuth();
 
   const navLinkClass = ({ isActive }) =>
     isActive
-      ? 'text-primary font-semibold border-b-2 border-primary pb-1 transition'
-      : 'text-text-secondary hover:text-primary transition';
+      ? "text-primary font-semibold border-b-2 border-primary pb-1 transition"
+      : "text-text-secondary hover:text-primary transition";
 
   return (
     <nav className="bg-background shadow-lg">
@@ -42,8 +42,8 @@ const Navbar = ({ onCartClick }) => {
                   to="/admin/reservations"
                   className={({ isActive }) =>
                     isActive
-                      ? 'text-secondary font-semibold border-b-2 border-secondary pb-1 transition'
-                      : 'text-secondary hover:text-secondary-hover font-semibold transition'
+                      ? "text-secondary font-semibold border-b-2 border-secondary pb-1 transition"
+                      : "text-secondary hover:text-secondary-hover font-semibold transition"
                   }
                 >
                   Dashboard
@@ -60,8 +60,8 @@ const Navbar = ({ onCartClick }) => {
                 to="/login"
                 className={({ isActive }) =>
                   isActive
-                    ? 'bg-primary text-white py-1.5 px-4 rounded-md shadow-md border-2 border-primary'
-                    : 'bg-primary text-white py-2 px-5 rounded-md shadow-md hover:bg-primary-hover transition'
+                    ? "bg-primary text-white py-1.5 px-4 rounded-md shadow-md border-2 border-primary"
+                    : "bg-primary text-white py-2 px-5 rounded-md shadow-md hover:bg-primary-hover transition"
                 }
               >
                 Admin Login
