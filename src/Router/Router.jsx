@@ -1,140 +1,168 @@
-import MainLayout from "@/Layout/MainLayout";
-import CheckoutPage from "@/pages/CheckoutPage";
-import HomePage from "@/pages/HomePage";
-import LoginPage from "@/pages/LoginPage";
-import MenuPage from "@/pages/MenuPage";
-import ReservationPage from "@/pages/ReservationPage";
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import ProtectedRoute from "./../components/ProtectedRoute";
-import AdminLayout from "@/Layout/AdminLayout";
-import ReservationsDashboard from "@/pages/admin/ReservationsDashboard";
-import OrdersDashboard from "@/pages/admin/OrdersDashboard";
-import ErrorPage from "@/pages/Error/Error";
-import MenuManagement from "@/pages/admin/MenuManagement";
-import AddMenuItem from "@/pages/admin/AddMenuItem";
-import AddChef from "@/pages/admin/AddChef";
-import AddFoodCategory from "@/pages/admin/AddFoodCategory";
-import Register from "@/pages/Register";
-import ManageUsers from "@/pages/admin/ManageUsers";
-import MyOrdersPage from "@/pages/customer/MyOrdersPage";
-import ProfilePage from "@/pages/customer/ProfilePage";
-import CustomerDashboardLayout from "@/pages/customer/CustomerDashboardLayout";
+import MainLayout from '@/Layout/MainLayout';
+import CheckoutPage from '@/pages/CheckoutPage';
+import HomePage from '@/pages/HomePage';
+import LoginPage from '@/pages/LoginPage';
+import MenuPage from '@/pages/MenuPage';
+import ReservationPage from '@/pages/ReservationPage';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import AdminLayout from '@/Layout/AdminLayout';
+import ReservationsDashboard from '@/pages/admin/ReservationsDashboard';
+import OrdersDashboard from '@/pages/admin/OrdersDashboard';
+import ErrorPage from '@/pages/Error/Error';
+import MenuManagement from '@/pages/admin/MenuManagement';
+import AddMenuItem from '@/pages/admin/AddMenuItem';
+import AddChef from '@/pages/admin/AddChef';
+import AddFoodCategory from '@/pages/admin/AddFoodCategory';
+import Register from '@/pages/Register';
+import ManageUsers from '@/pages/admin/ManageUsers';
+import MyOrdersPage from '@/pages/customer/CustomerOrders';
+import AdminProtectedRoute from '../components/AdminProtectedRoute';
+import CustomerLayout from '@/Layout/CustomerLayout';
+import CustomerReservations from '@/pages/customer/CustomerReservations';
+import CustomerProtectedRoute from '@/components/CustomerProtectedRoute';
+import CustomerProfile from '@/pages/customer/CustomerProfile';
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <MainLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "/",
+        path: '/',
         element: <HomePage />,
       },
       {
-        path: "/menu",
+        path: '/menu',
         element: <MenuPage />,
       },
       {
-        path: "/reservations",
+        path: '/reservations',
         element: <ReservationPage />,
       },
       {
-        path: "/login",
+        path: '/login',
         element: <LoginPage />,
       },
       {
-        path: "/register",
+        path: '/register',
         element: <Register />,
       },
       {
-        path: "/checkout",
+        path: '/checkout',
         element: <CheckoutPage />,
       },
     ],
   },
   {
-    path: "/admin",
+    path: '/admin/dashboard',
     element: <AdminLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "",
+        path: '',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <ReservationsDashboard />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "reservations",
+        path: 'reservations',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <ReservationsDashboard />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "orders",
+        path: 'orders',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <OrdersDashboard />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "add-menu-item",
+        path: 'add-menu-item',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AddMenuItem />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "menu-management",
+        path: 'menu-management',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <MenuManagement />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "add-chef",
+        path: 'add-chef',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AddChef />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "add-food-category",
+        path: 'add-food-category',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AddFoodCategory />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
       {
-        path: "manage-users",
+        path: 'manage-users',
         element: (
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <ManageUsers />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         ),
       },
     ],
   },
 
   {
-    path: "/dashboard",
-    element: (
-      <ProtectedRoute allowedRoles={["customer"]}>
-        <CustomerDashboardLayout />
-      </ProtectedRoute>
-    ),
+    path: '/customer/dashboard',
+    element: <CustomerLayout />,
+    errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Navigate to="my-orders" replace /> },
-      { path: "my-orders", element: <MyOrdersPage /> },
-      { path: "profile", element: <ProfilePage /> },
+      {
+        path: '',
+        element: (
+          <CustomerProtectedRoute>
+            <MyOrdersPage />
+          </CustomerProtectedRoute>
+        ),
+      },
+      {
+        path: 'my-orders',
+        element: (
+          <CustomerProtectedRoute>
+            <MyOrdersPage />
+          </CustomerProtectedRoute>
+        ),
+      },
+      {
+        path: 'reservations',
+        element: (
+          <CustomerProtectedRoute>
+            <CustomerReservations />
+          </CustomerProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <CustomerProtectedRoute>
+            <CustomerProfile />
+          </CustomerProtectedRoute>
+        ),
+      },
     ],
   },
 ]);

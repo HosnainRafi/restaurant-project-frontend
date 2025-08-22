@@ -21,7 +21,7 @@ const FeaturedDishes = () => {
         description: it.description,
         image:
           it.imageUrl || "https://via.placeholder.com/600x400?text=Featured",
-        price: it.price, // in cents
+        price: it.price,
         category:
           typeof it.categoryId === "object" ? it.categoryId?.name : null,
       }));
@@ -75,7 +75,7 @@ const FeaturedDishes = () => {
         {!loading && !err && items.length > 0 && (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {items.map((item) => (
-              <SingleMenuItem key={item._id} item={item} />
+              <SingleMenuItem key={item.id} item={item} />
             ))}
           </div>
         )}

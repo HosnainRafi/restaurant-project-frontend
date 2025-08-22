@@ -42,7 +42,7 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/reservations"
+          to="/admin/dashboard/reservations"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -54,7 +54,7 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/orders"
+          to="/admin/dashboard/orders"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -66,7 +66,7 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/add-menu-item"
+          to="/admin/dashboard/add-menu-item"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -78,7 +78,7 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/menu-management"
+          to="/admin/dashboard/menu-management"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -91,7 +91,7 @@ const AdminSidebar = () => {
 
         {/* Add New Chef */}
         <NavLink
-          to="/admin/add-chef"
+          to="/admin/dashboard/add-chef"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -104,7 +104,7 @@ const AdminSidebar = () => {
 
         {/* Add Food Category */}
         <NavLink
-          to="/admin/add-food-category"
+          to="/admin/dashboard/add-food-category"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -115,9 +115,8 @@ const AdminSidebar = () => {
           Add Food Category
         </NavLink>
 
-        {/* ✅ New Manage Users */}
         <NavLink
-          to="/admin/manage-users"
+          to="/admin/dashboard/manage-users"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
