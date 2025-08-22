@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { FiCamera, FiTrash2, FiPlus } from 'react-icons/fi';
-import toast from 'react-hot-toast';
-import api from '../../lib/api';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { FiCamera, FiTrash2, FiPlus } from "react-icons/fi";
+import toast from "react-hot-toast";
+import api from "../../lib/api";
 
 const AddChef = () => {
   const [imageFile, setImageFile] = useState(null);
@@ -14,37 +14,37 @@ const AddChef = () => {
     reset,
   } = useForm();
 
-  const onSubmit = async data => {
+  const onSubmit = async (data) => {
     try {
       let imageUrl = null;
 
       if (imageFile) {
         if (imageFile.size > 5 * 1024 * 1024) {
-          toast.error('Max 5MB image size');
+          toast.error("Max 5MB image size");
           return;
         }
         if (!/^image\//.test(imageFile.type)) {
-          toast.error('Invalid file type');
+          toast.error("Invalid file type");
           return;
         }
 
         const form = new FormData();
-        form.append('image', imageFile);
+        form.append("image", imageFile);
 
         const uploading = fetch(
           `https://api.imgbb.com/1/upload?key=${
             import.meta.env.VITE_IMGBB_KEY
           }`,
           {
-            method: 'POST',
+            method: "POST",
             body: form,
           }
-        ).then(res => res.json());
+        ).then((res) => res.json());
 
         toast.promise(uploading, {
-          loading: 'Uploading image...',
-          success: 'Image uploaded!',
-          error: 'Image upload failed.',
+          loading: "Uploading image...",
+          success: "Image uploaded!",
+          error: "Image upload failed.",
         });
 
         const json = await uploading;
@@ -52,19 +52,19 @@ const AddChef = () => {
       }
 
       const payload = { ...data, ...(imageUrl ? { imageUrl } : {}) };
-      const promise = api.post('/add-new-chefs', payload);
+      const promise = api.post("/chefs", payload);
 
       toast.promise(promise, {
-        loading: 'Adding chef...',
-        success: 'Chef added successfully!',
-        error: 'Failed to add chef.',
+        loading: "Adding chef...",
+        success: "Chef added successfully!",
+        error: "Failed to add chef.",
       });
 
       await promise;
       reset();
       setImageFile(null);
     } catch (error) {
-      toast.error(error?.message || 'Failed to add chef.');
+      toast.error(error?.message || "Failed to add chef.");
     }
   };
 
@@ -84,7 +84,7 @@ const AddChef = () => {
             </label>
             <input
               type="text"
-              {...register('name', { required: 'Name is required' })}
+              {...register("name", { required: "Name is required" })}
               className="w-full border border-gray-200 rounded-md px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="Chef's full name"
             />
@@ -98,7 +98,7 @@ const AddChef = () => {
             <label className="block text-sm text-gray-700 mb-1">Email</label>
             <input
               type="email"
-              {...register('email', { required: 'Email is required' })}
+              {...register("email", { required: "Email is required" })}
               className="w-full border border-gray-200 rounded-md px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="chef@example.com"
             />
@@ -114,7 +114,7 @@ const AddChef = () => {
             <label className="block text-sm text-gray-700 mb-1">Phone</label>
             <input
               type="tel"
-              {...register('phone')}
+              {...register("phone")}
               className="w-full border border-gray-200 rounded-md px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="+880 1XXXXXXXXX"
             />
@@ -127,7 +127,7 @@ const AddChef = () => {
             </label>
             <input
               type="text"
-              {...register('specialty')}
+              {...register("specialty")}
               className="w-full border border-gray-200 rounded-md px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="e.g., Italian Cuisine"
             />
@@ -138,13 +138,13 @@ const AddChef = () => {
             <label className="block text-sm text-gray-700 mb-1">Image</label>
             <div
               className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition"
-              onClick={() => document.getElementById('fileUpload').click()}
+              onClick={() => document.getElementById("fileUpload").click()}
             >
               <input
                 type="file"
                 accept="image/*"
                 id="fileUpload"
-                onChange={e => setImageFile(e.target.files?.[0] || null)}
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                 className="hidden"
               />
               <div className="flex items-center gap-2 text-gray-500 font-medium">
@@ -178,7 +178,7 @@ const AddChef = () => {
               Description
             </label>
             <textarea
-              {...register('description')}
+              {...register("description")}
               rows={3}
               className="w-full border border-gray-200 rounded-md px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="Write a short bio or description"
@@ -192,7 +192,7 @@ const AddChef = () => {
               disabled={isSubmitting}
               className="w-full bg-primary text-white py-2.5 rounded-md font-medium hover:bg-primary/90 transition disabled:bg-gray-400"
             >
-              {isSubmitting ? 'Adding...' : 'Add Chef'}
+              {isSubmitting ? "Adding..." : "Add Chef"}
             </button>
           </div>
         </form>
