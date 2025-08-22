@@ -11,11 +11,9 @@ const FeaturedSection = () => {
     try {
       setLoading(true);
       setErr(null);
-      // Uses your special endpoint and flag
       const res = await api.get("/menu-items/special", {
         params: { flag: "isFeatured" },
       });
-      // Normalize to expected UI shape
       const data = (res?.data?.data || []).map((it) => ({
         id: it._id,
         title: it.name,
