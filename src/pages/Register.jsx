@@ -84,7 +84,7 @@ const Register = () => {
   };
 
   return (
-    <div className="py-8 md:py-12 flex items-center justify-center bg-gradient-to-br from-[#F9F9F6] to-[#FFF7F2] px-4">
+    <div className="pt-28 pb-12 flex items-center justify-center bg-gradient-to-br from-[#F9F9F6] to-[#FFF7F2] px-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8">
         <h2 className="text-3xl font-bold text-center text-primary mb-2">
           Create Account

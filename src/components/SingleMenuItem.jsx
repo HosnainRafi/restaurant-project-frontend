@@ -1,14 +1,13 @@
 import { useCart } from '@/hooks/useCart';
-import toast from 'react-hot-toast';
+import { useOutletContext } from 'react-router-dom';
 
 const SingleMenuItem = ({ item }) => {
   const formattedPrice = (item.price / 100).toFixed(2);
-    const { addItem } = useCart();
-
+  const { addItem } = useCart();
+  const { HandleCardPanelOpen } = useOutletContext();
   const handleAddToCart = () => {
     addItem(item);
-      console.log(item);
-    toast.success(`${item.name} added to cart!`);
+    HandleCardPanelOpen();
   };
   return (
     <div className="grid grid-cols-12 rounded-xl shadow-lg overflow-hidden transition hover:shadow-2xl">
@@ -18,7 +17,6 @@ const SingleMenuItem = ({ item }) => {
           <h3 className="text-xl font-semibold text-foreground">{item.name}</h3>
           <p className="mt-2 text-text-secondary">{item.description}</p>
         </div>
-
         <div className="mt-4 flex items-center justify-between">
           <span className="text-lg font-bold text-primary">
             {formattedPrice}

@@ -29,7 +29,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="py-8 md:py-12 flex items-center justify-center px-4 bg-gradient-to-br from-[#F9F9F6] to-[#FFF7F2] min-h-[calc(100vh-395px)]">
+    <div className="pt-28 mb-12 flex items-center justify-center px-4 bg-gradient-to-br from-[#F9F9F6] to-[#FFF7F2] min-h-[calc(100vh - 395px)]">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-secondary/20 rounded-full blur-3xl"></div>

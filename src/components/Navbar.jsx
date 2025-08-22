@@ -19,11 +19,11 @@ const Navbar = ({ onCartClick }) => {
 
   // Dynamic nav link class
   const navLinkClass = ({ isActive }) => {
-    const baseColor = scrolled ? 'text-text-secondary' : 'text-white';
+    const baseColor = scrolled ? 'text-text-secondary' : 'text-sky-500';
     const activeColor = scrolled ? 'text-primary' : 'text-primary';
     return isActive
-      ? `${activeColor} font-semibold border-b-2 border-primary pb-1 transition`
-      : `${baseColor} hover:text-primary transition`;
+      ? `${activeColor} font-semibold border-b-2 border-primary text-lg transition bg-white/5`
+      : `${baseColor} hover:text-primary transition text-lg`;
   };
 
   const handleLogout = () => {
@@ -49,7 +49,9 @@ const Navbar = ({ onCartClick }) => {
     };
   }, []);
 
-  const linkTextColor = scrolled ? 'h-6 w-6 text-text-secondary' : 'h-6 w-6 text-white';
+  const linkTextColor = scrolled
+    ? 'h-6 w-6 text-text-secondary'
+    : 'h-6 w-6 text-sky-500';
 
   return (
     <nav
@@ -62,7 +64,7 @@ const Navbar = ({ onCartClick }) => {
         <Link
           to="/"
           className={`text-2xl font-extrabold tracking-wide transition ${
-            scrolled ? 'text-primary' : 'text-white'
+            scrolled ? 'text-primary' : 'text-sky-500'
           }`}
         >
           Urban Grill
@@ -77,7 +79,9 @@ const Navbar = ({ onCartClick }) => {
             Menu
           </NavLink>
 
-          <CartIcon  onClick={onCartClick} color={linkTextColor} />
+          {role == 'customer' && user && (
+            <CartIcon onClick={onCartClick} color={linkTextColor} />
+          )}
 
           {user ? (
             <div className="relative" ref={dropdownRef}>
@@ -114,16 +118,15 @@ const Navbar = ({ onCartClick }) => {
                       >
                         Book a Table
                       </NavLink>
+                      <NavLink
+                        to="/customer/dashboard/profile"
+                        className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        Profile
+                      </NavLink>
                     </>
                   )}
-
-                  <NavLink
-                    to="/customer/dashboard/profile"
-                    className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Profile
-                  </NavLink>
 
                   <button
                     onClick={handleLogout}
@@ -135,16 +138,20 @@ const Navbar = ({ onCartClick }) => {
               )}
             </div>
           ) : (
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                isActive
-                  ? 'bg-primary text-white py-1.5 px-4 rounded-md shadow-md border-2 border-primary'
-                  : 'bg-primary text-white py-2 px-5 rounded-md shadow-md hover:bg-primary-hover transition'
-              }
-            >
-              Login
-            </NavLink>
+            <div className="flex items-center gap-2">
+              <NavLink
+                to="/login"
+                className="bg-primary text-white py-2 px-4 rounded-md shadow-md hover:bg-primary-hover transition"
+              >
+                Login
+              </NavLink>
+              <NavLink
+                to="/register"
+                className="border border-primary text-primary py-2 px-4 rounded-md shadow-md hover:bg-primary-hover hover:text-white transition"
+              >
+                Sign Up
+              </NavLink>
+            </div>
           )}
         </div>
 

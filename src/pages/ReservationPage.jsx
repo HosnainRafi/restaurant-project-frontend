@@ -40,7 +40,7 @@ const ReservationPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-10 px-4">
+    <div className="pt-28 pb-12 bg-background py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
         <h1 className="text-3xl md:text-4xl font-bold text-primary text-center mb-3">
           Book a Table
