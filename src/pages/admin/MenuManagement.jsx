@@ -1,16 +1,22 @@
+import { useEffect, useState } from 'react';
+import { FaBolt, FaEdit, FaStar, FaTrash, FaUtensils } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import { Dialog, Transition } from '@headlessui/react';
 import EditMenuItemForm from '@/components/EditMenuItemForm';
 import Modal from '@/components/Modal';
 import api from '@/lib/api';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { FaBolt, FaEdit, FaStar, FaTrash, FaUtensils } from 'react-icons/fa';
+import { Fragment } from 'react';
 
 const MenuManagement = () => {
   const [categories, setCategories] = useState([]);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -32,22 +38,6 @@ const MenuManagement = () => {
     fetchData();
   }, []);
 
-  const handleDeleteItem = async itemId => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
-    const promise = api.delete(`/menu-items/${itemId}`);
-    toast.promise(promise, {
-      loading: 'Deleting item...',
-      success: 'Item deleted successfully!',
-      error: 'Failed to delete item.',
-    });
-    try {
-      await promise;
-      setMenuItems(prev => prev.filter(item => item._id !== itemId));
-    } catch {
-      toast.error('Failed to delete item.');
-    }
-  };
-
   const handleEditClick = item => {
     setSelectedItem(item);
     setIsEditModalOpen(true);
@@ -55,8 +45,7 @@ const MenuManagement = () => {
 
   const handleEditSubmit = async data => {
     if (!selectedItem) return;
-    const payload = { ...data };
-    const promise = api.patch(`/menu-items/${selectedItem._id}`, payload);
+    const promise = api.patch(`/menu-items/${selectedItem._id}`, data);
     toast.promise(promise, {
       loading: 'Updating item...',
       success: 'Item updated successfully!',
@@ -72,7 +61,7 @@ const MenuManagement = () => {
       setIsEditModalOpen(false);
       setSelectedItem(null);
     } catch {
-      toast.error('Failed to delete item.');
+      toast.error('Failed to update item.');
     }
   };
 
@@ -86,6 +75,29 @@ const MenuManagement = () => {
     try {
       const res = await promise;
       setMenuItems(prev => prev.map(i => (i._id === id ? res.data.data : i)));
+    } catch {
+      toast.error('Failed to update item.');
+    }
+  };
+
+  const handleDeleteClick = item => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+    const promise = api.delete(`/menu-items/${itemToDelete._id}`);
+    toast.promise(promise, {
+      loading: 'Deleting item...',
+      success: 'Item deleted successfully!',
+      error: 'Failed to delete item.',
+    });
+    try {
+      await promise;
+      setMenuItems(prev => prev.filter(i => i._id !== itemToDelete._id));
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
     } catch {
       toast.error('Failed to delete item.');
     }
@@ -249,7 +261,7 @@ const MenuManagement = () => {
                           <FaEdit /> Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteItem(item._id)}
+                          onClick={() => handleDeleteClick(item)}
                           className="flex items-center gap-1 px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
                         >
                           <FaTrash /> Delete
@@ -264,6 +276,7 @@ const MenuManagement = () => {
         )}
       </div>
 
+      {/* Edit Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -278,6 +291,64 @@ const MenuManagement = () => {
           />
         )}
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Transition appear show={isDeleteModalOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => setIsDeleteModalOpen(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-50"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-50"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black opacity-50" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="bg-white rounded-xl p-6 max-w-sm mx-auto shadow-lg">
+                <Dialog.Title className="text-lg font-medium text-gray-900">
+                  Confirm Delete
+                </Dialog.Title>
+                <hr className='border border-gray-300' />
+                <Dialog.Description className="text-sm text-gray-600 mt-2">
+                  Are you sure you want to delete{' '}
+                  <strong className='text-primary'>{itemToDelete?.name}</strong>?
+                </Dialog.Description>
+                <div className="mt-4 flex justify-end gap-3">
+                  <button
+                    className="bg-gray-200 text-gray-800 px-4 py-1 rounded hover:bg-gray-300 transition"
+                    onClick={() => setIsDeleteModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-600 transition"
+                    onClick={handleConfirmDelete}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 };
