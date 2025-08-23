@@ -1,66 +1,68 @@
-import MainLayout from '@/Layout/MainLayout';
-import CheckoutPage from '@/pages/CheckoutPage';
-import HomePage from '@/pages/HomePage';
-import LoginPage from '@/pages/LoginPage';
-import MenuPage from '@/pages/MenuPage';
-import ReservationPage from '@/pages/ReservationPage';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AdminLayout from '@/Layout/AdminLayout';
-import ReservationsDashboard from '@/pages/admin/ReservationsDashboard';
-import OrdersDashboard from '@/pages/admin/OrdersDashboard';
-import ErrorPage from '@/pages/Error/Error';
-import MenuManagement from '@/pages/admin/MenuManagement';
-import AddMenuItem from '@/pages/admin/AddMenuItem';
-import AddChef from '@/pages/admin/AddChef';
-import AddFoodCategory from '@/pages/admin/AddFoodCategory';
-import Register from '@/pages/Register';
-import ManageUsers from '@/pages/admin/ManageUsers';
-import MyOrdersPage from '@/pages/customer/CustomerOrders';
-import AdminProtectedRoute from '../components/AdminProtectedRoute';
-import CustomerLayout from '@/Layout/CustomerLayout';
-import CustomerReservations from '@/pages/customer/CustomerReservations';
-import CustomerProtectedRoute from '@/components/CustomerProtectedRoute';
-import CustomerProfile from '@/pages/customer/CustomerProfile';
+import MainLayout from "@/Layout/MainLayout";
+import CheckoutPage from "@/pages/CheckoutPage";
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import MenuPage from "@/pages/MenuPage";
+import ReservationPage from "@/pages/ReservationPage";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import AdminLayout from "@/Layout/AdminLayout";
+import ReservationsDashboard from "@/pages/admin/ReservationsDashboard";
+import OrdersDashboard from "@/pages/admin/OrdersDashboard";
+import ErrorPage from "@/pages/Error/Error";
+import MenuManagement from "@/pages/admin/MenuManagement";
+import AddMenuItem from "@/pages/admin/AddMenuItem";
+import AddChef from "@/pages/admin/AddChef";
+import AddFoodCategory from "@/pages/admin/AddFoodCategory";
+import Register from "@/pages/Register";
+import ManageUsers from "@/pages/admin/ManageUsers";
+import MyOrdersPage from "@/pages/customer/CustomerOrders";
+import AdminProtectedRoute from "../components/AdminProtectedRoute";
+import CustomerLayout from "@/Layout/CustomerLayout";
+import CustomerReservations from "@/pages/customer/CustomerReservations";
+import CustomerProtectedRoute from "@/components/CustomerProtectedRoute";
+import CustomerProfile from "@/pages/customer/CustomerProfile";
+import OrderDetailPage from "@/pages/customer/OrderDetailPage";
+import PaymentPage from "@/pages/PaymentPage";
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: '/',
+        path: "/",
         element: <HomePage />,
       },
       {
-        path: '/menu',
+        path: "/menu",
         element: <MenuPage />,
       },
       {
-        path: '/reservations',
+        path: "/reservations",
         element: <ReservationPage />,
       },
       {
-        path: '/login',
+        path: "/login",
         element: <LoginPage />,
       },
       {
-        path: '/register',
+        path: "/register",
         element: <Register />,
       },
       {
-        path: '/checkout',
+        path: "/checkout",
         element: <CheckoutPage />,
       },
     ],
   },
   {
-    path: '/admin/dashboard',
+    path: "/admin/dashboard",
     element: <AdminLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: '',
+        path: "",
         element: (
           <AdminProtectedRoute>
             <ReservationsDashboard />
@@ -68,7 +70,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'reservations',
+        path: "reservations",
         element: (
           <AdminProtectedRoute>
             <ReservationsDashboard />
@@ -76,7 +78,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'orders',
+        path: "orders",
         element: (
           <AdminProtectedRoute>
             <OrdersDashboard />
@@ -84,7 +86,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'add-menu-item',
+        path: "add-menu-item",
         element: (
           <AdminProtectedRoute>
             <AddMenuItem />
@@ -92,7 +94,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'menu-management',
+        path: "menu-management",
         element: (
           <AdminProtectedRoute>
             <MenuManagement />
@@ -100,7 +102,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'add-chef',
+        path: "add-chef",
         element: (
           <AdminProtectedRoute>
             <AddChef />
@@ -108,7 +110,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'add-food-category',
+        path: "add-food-category",
         element: (
           <AdminProtectedRoute>
             <AddFoodCategory />
@@ -116,7 +118,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'manage-users',
+        path: "manage-users",
         element: (
           <AdminProtectedRoute>
             <ManageUsers />
@@ -127,12 +129,12 @@ export const router = createBrowserRouter([
   },
 
   {
-    path: '/customer/dashboard',
+    path: "/customer/dashboard",
     element: <CustomerLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: '',
+        path: "",
         element: (
           <CustomerProtectedRoute>
             <MyOrdersPage />
@@ -140,7 +142,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'my-orders',
+        path: "my-orders",
         element: (
           <CustomerProtectedRoute>
             <MyOrdersPage />
@@ -148,7 +150,23 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'reservations',
+        path: "my-orders/:orderId",
+        element: (
+          <CustomerProtectedRoute>
+            <OrderDetailPage />
+          </CustomerProtectedRoute>
+        ),
+      },
+      {
+        path: "payment/:orderId",
+        element: (
+          <CustomerProtectedRoute>
+            <PaymentPage />
+          </CustomerProtectedRoute>
+        ),
+      },
+      {
+        path: "reservations",
         element: (
           <CustomerProtectedRoute>
             <CustomerReservations />
@@ -156,7 +174,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'profile',
+        path: "profile",
         element: (
           <CustomerProtectedRoute>
             <CustomerProfile />
