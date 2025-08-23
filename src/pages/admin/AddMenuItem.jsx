@@ -93,7 +93,7 @@ const AddMenuItem = () => {
       await promise;
       reset();
       setImageFile(null);
-      navigate('/admin/menu-management');
+      navigate('/admin/dashboard/menu-management');
     } catch (error) {
       toast.error(error?.message || 'Failed to add item.');
     }
