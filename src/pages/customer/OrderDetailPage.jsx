@@ -163,7 +163,7 @@ const OrderDetailPage = () => {
 
       <div className="mt-8 text-center">
         <Link
-          to="/dashboard/my-orders"
+          to="/customer/dashboard/my-orders"
           className="text-sm text-gray-600 hover:text-primary"
         >
           ← Back to All Orders

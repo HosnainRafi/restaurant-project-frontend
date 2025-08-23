@@ -82,9 +82,11 @@ const ReservationsDashboard = () => {
             {reservations.map(res => (
               <tr key={res._id} className="hover:bg-gray-50 transition">
                 <td className="px-4 py-3 font-medium text-gray-800">
-                  {res.name}
+                  {res?.customer?.name}
                 </td>
-                <td className="px-4 py-3 text-gray-600">{res.phone}</td>
+                <td className="px-4 py-3 text-gray-600">
+                  {res?.customer?.phone}
+                </td>
                 <td className="px-4 py-3 text-gray-600">
                   <p>Party of {res.partySize}</p>
                   <p className="text-sm text-gray-400">

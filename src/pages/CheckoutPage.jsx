@@ -1,25 +1,25 @@
-import { useState, useMemo } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { checkoutSchema } from "../schemas/checkoutSchema";
-import { useCart } from "../hooks/useCart";
-import api from "../lib/api";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-import CheckoutForm from "../components/CheckoutForm";
-import { ImSpinner3 } from "react-icons/im";
-import { useAuth } from "@/hooks/useAuth"; // Import useAuth
+import { useState, useMemo } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { checkoutSchema } from '../schemas/checkoutSchema';
+import { useCart } from '../hooks/useCart';
+import api from '../lib/api';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import CheckoutForm from '../components/CheckoutForm';
+import { ImSpinner3 } from 'react-icons/im';
+import { useAuth } from '@/hooks/useAuth';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const TAX_RATE = 0.08;
 
 const CheckoutPage = () => {
   const { items, clearCart } = useCart();
-  const { dbUser } = useAuth(); // Get the logged-in user's profile
+  const { dbUser } = useAuth();
   const navigate = useNavigate();
-  const [clientSecret, setClientSecret] = useState("");
+  const [clientSecret, setClientSecret] = useState('');
   const [order, setOrder] = useState(null);
 
   const {
@@ -29,7 +29,7 @@ const CheckoutPage = () => {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { type: "pickup", paymentMethod: "card" },
+    defaultValues: { type: 'pickup', paymentMethod: 'card' },
   });
 
   const subtotal = useMemo(
@@ -39,33 +39,30 @@ const CheckoutPage = () => {
   const tax = Math.round(subtotal * TAX_RATE);
   const total = subtotal + tax;
 
-  const paymentMethod = watch("paymentMethod");
-  const orderType = watch("type");
+  const paymentMethod = watch('paymentMethod');
+  const orderType = watch('type');
 
-  const handleCreateOrder = async (formData) => {
+  const handleCreateOrder = async formData => {
     const orderData = {
       customer: {
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        address: orderType === "delivery" ? formData.address : undefined,
-        // --- NEW: Add the customer's UID if they are logged in ---
+        address: orderType === 'delivery' ? formData.address : undefined,
         uid: dbUser?.uid,
       },
-      items: items.map((item) => ({
-        // --- THIS IS THE FIX ---
-        // Map the item's `_id` from the cart to the `menuItemId` expected by the backend.
+      items: items.map(item => ({
         menuItemId: item._id,
         quantity: item.quantity,
       })),
       type: formData.type,
     };
 
-    const promise = api.post("/orders", orderData);
+    const promise = api.post('/orders', orderData);
     toast.promise(promise, {
-      loading: "Placing your order...",
-      success: "Order placed! Finalizing...",
-      error: (err) => err.response?.data?.message || "Failed to place order.",
+      loading: 'Placing your order...',
+      success: 'Order placed! Finalizing...',
+      error: err => err.response?.data?.message || 'Failed to place order.',
     });
 
     try {
@@ -73,34 +70,34 @@ const CheckoutPage = () => {
       const newOrder = res.data.data;
       setOrder(newOrder);
 
-      if (formData.paymentMethod === "card") {
+      if (formData.paymentMethod === 'card') {
         initializePayment(newOrder);
       } else {
         toast.success("Your order is confirmed! We'll see you soon.");
         clearCart();
-        navigate("/");
+        navigate('/');
       }
     } catch (error) {
-      console.error("Failed to create order:", error.response?.data || error);
+      console.error('Failed to create order:', error.response?.data || error);
     }
   };
 
-  const initializePayment = async (createdOrder) => {
+  const initializePayment = async createdOrder => {
     try {
-      const res = await api.post("/payment/create-payment-intent", {
+      const res = await api.post('/payment/create-payment-intent', {
         amount: createdOrder.total,
         orderId: createdOrder._id,
       });
       setClientSecret(res.data.data.clientSecret);
     } catch (err) {
-      toast.error("Could not initialize payment module.");
+      toast.error('Could not initialize payment module.');
       console.error(err);
     }
   };
 
   const handleSuccessfulCheckout = async () => {
     clearCart();
-    navigate("/");
+    navigate('/');
   };
 
   if (!items.length) {
@@ -108,7 +105,7 @@ const CheckoutPage = () => {
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold">Your cart is empty.</h2>
         <button
-          onClick={() => navigate("/menu")}
+          onClick={() => navigate('/menu')}
           className="mt-4 bg-primary text-white py-2 px-5 rounded-lg"
         >
           Browse Menu
@@ -119,30 +116,66 @@ const CheckoutPage = () => {
 
   if (clientSecret && order) {
     return (
-      <div className="max-w-xl mx-auto p-8 my-10 bg-white rounded-lg shadow-xl">
-        <h2 className="text-3xl font-bold mb-2 text-center">
-          Complete Your Payment
-        </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Order #{order.orderNumber}
-        </p>
-        <Elements options={{ clientSecret }} stripe={stripePromise}>
-          <CheckoutForm
-            clientSecret={clientSecret}
-            onSuccessfulCheckout={handleSuccessfulCheckout}
-          />
-        </Elements>
+      <div className=" pt-28 pb-12">
+        <div className="max-w-xl mx-auto p-8 bg-white rounded-xl shadow-md">
+          <h2 className="text-2xl font-bold mb-2 text-center">
+            Complete Your Payment
+          </h2>
+          <p className="text-center text-gray-500 mb-6">
+            Order #{order.orderNumber}
+          </p>
+          <Elements options={{ clientSecret }} stripe={stripePromise}>
+            <CheckoutForm
+              clientSecret={clientSecret}
+              onSuccessfulCheckout={handleSuccessfulCheckout}
+            />
+          </Elements>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 py-12">
-      <div className="bg-white p-8 rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-semibold mb-6">Your Details</h2>
+    <div className="max-w-2xl mx-auto px-4 pt-28 pb-12">
+      {/* Order Summary */}
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+        <div className="space-y-3">
+          {items.map(item => (
+            <div
+              key={item._id}
+              className="flex justify-between items-center border-b pb-2 text-sm"
+            >
+              <span className="font-medium">
+                {item.name} × {item.quantity}
+              </span>
+              <span className="text-gray-700">
+                ${((item.price * item.quantity) / 100).toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 pt-4 border-t space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>${(subtotal / 100).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Tax</span>
+            <span>${(tax / 100).toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-lg font-bold text-primary">
+            <span>Total</span>
+            <span>${(total / 100).toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+      {/* User Details Form */}
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <h2 className="text-xl font-semibold mb-6">Your Details</h2>
         <form onSubmit={handleSubmit(handleCreateOrder)} className="space-y-5">
           <input
-            {...register("name")}
+            {...register('name')}
             placeholder="Full Name"
             className="w-full border rounded-lg px-3 py-2"
           />
@@ -150,7 +183,7 @@ const CheckoutPage = () => {
             <p className="text-red-500 text-sm">{errors.name.message}</p>
           )}
           <input
-            {...register("phone")}
+            {...register('phone')}
             placeholder="Phone Number"
             className="w-full border rounded-lg px-3 py-2"
           />
@@ -159,17 +192,17 @@ const CheckoutPage = () => {
           )}
 
           <select
-            {...register("type")}
+            {...register('type')}
             className="w-full border rounded-lg px-3 py-2 bg-white"
           >
             <option value="pickup">Pickup</option>
             <option value="delivery">Delivery</option>
           </select>
 
-          {orderType === "delivery" && (
+          {orderType === 'delivery' && (
             <div>
               <input
-                {...register("address")}
+                {...register('address')}
                 placeholder="Full Delivery Address"
                 className="w-full border rounded-lg px-3 py-2"
               />
@@ -180,22 +213,22 @@ const CheckoutPage = () => {
           )}
 
           <div>
-            <h3 className="text-lg font-semibold mb-3">Payment Method</h3>
+            <h3 className="text-lg font-medium mb-3">Payment Method</h3>
             <div className="space-y-3">
-              <label className="flex items-center p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+              <label className="flex items-center p-3 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                 <input
                   type="radio"
                   value="card"
-                  {...register("paymentMethod")}
+                  {...register('paymentMethod')}
                   className="mr-3"
                 />
                 Pay with Card
               </label>
-              <label className="flex items-center p-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+              <label className="flex items-center p-3 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                 <input
                   type="radio"
                   value="pickup"
-                  {...register("paymentMethod")}
+                  {...register('paymentMethod')}
                   className="mr-3"
                 />
                 Pay at Pickup
@@ -211,50 +244,17 @@ const CheckoutPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-primary text-white py-3 px-5 rounded-lg shadow-md hover:bg-primary-hover transition flex justify-center items-center"
+            className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary/90 transition flex justify-center items-center"
           >
             {isSubmitting ? (
-              <ImSpinner3 className="animate-spin" size={24} />
-            ) : paymentMethod === "card" ? (
-              "Continue to Payment"
+              <ImSpinner3 className="animate-spin" size={20} />
+            ) : paymentMethod === 'card' ? (
+              'Continue to Payment'
             ) : (
-              "Confirm Order"
+              'Confirm Order'
             )}
           </button>
         </form>
-      </div>
-
-      <div className="bg-white p-8 rounded-2xl shadow-lg h-fit">
-        <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div
-              key={item._id}
-              className="flex justify-between items-center border-b pb-2"
-            >
-              <span className="font-medium">
-                {item.name} &times; {item.quantity}
-              </span>
-              <span className="text-gray-700">
-                ${((item.price * item.quantity) / 100).toFixed(2)}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 pt-4 border-t space-y-2 font-semibold">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>${(subtotal / 100).toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tax</span>
-            <span>${(tax / 100).toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-xl font-bold text-primary">
-            <span>Total</span>
-            <span>${(total / 100).toFixed(2)}</span>
-          </div>
-        </div>
       </div>
     </div>
   );

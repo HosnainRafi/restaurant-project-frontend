@@ -31,27 +31,48 @@ const cartReducer = (state, action) => {
       };
     case 'CLEAR_CART':
       return { ...state, items: [] };
-    case 'SET_CART': // for initializing from localStorage
+    case 'SET_CART':
       return { ...state, items: action.payload };
     default:
       return state;
   }
 };
 
-// Load initial state from localStorage
-const getInitialState = () => {
-  const storedCart = localStorage.getItem('cartItems');
+const getInitialState = (userId) => {
+  if (!userId) return { items: [] };
+  const storedCart = localStorage.getItem(`cartItems_${userId}`);
   return storedCart ? { items: JSON.parse(storedCart) } : { items: [] };
 };
 
 export const CartProvider = ({ children }) => {
   const { user, dbUser } = useAuth();
-  const [state, dispatch] = useReducer(cartReducer, {}, getInitialState);
+  const userId = user?.uid || dbUser?._id;
 
-  // Save to localStorage whenever items change
+  const [state, dispatch] = useReducer(
+    cartReducer,
+    {},
+    () => getInitialState(userId)
+  );
+
+  // Save cart per user in localStorage
   useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(state.items));
-  }, [state.items]);
+    if (userId) {
+      localStorage.setItem(`cartItems_${userId}`, JSON.stringify(state.items));
+    }
+  }, [state.items, userId]);
+
+  // Reset cart when user changes (prevents showing another user’s cart)
+  useEffect(() => {
+    if (userId) {
+      const storedCart = localStorage.getItem(`cartItems_${userId}`);
+      dispatch({
+        type: 'SET_CART',
+        payload: storedCart ? JSON.parse(storedCart) : [],
+      });
+    } else {
+      dispatch({ type: 'SET_CART', payload: [] });
+    }
+  }, [userId]);
 
   const checkUserAndRole = () => {
     if (!user) {
@@ -65,13 +86,13 @@ export const CartProvider = ({ children }) => {
     return true;
   };
 
-  const addItem = item => {
+  const addItem = (item) => {
     if (!checkUserAndRole()) return;
     dispatch({ type: 'ADD_ITEM', payload: item });
     toast.success(`${item?.name} added to cart`);
   };
 
-  const removeItem = id => {
+  const removeItem = (id) => {
     if (!checkUserAndRole()) return;
     dispatch({ type: 'REMOVE_ITEM', payload: { id } });
     toast.success('Item removed from cart');
@@ -80,7 +101,9 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => {
     if (!checkUserAndRole()) return;
     dispatch({ type: 'CLEAR_CART' });
-    localStorage.removeItem('cartItems'); // clear localStorage
+    if (userId) {
+      localStorage.removeItem(`cartItems_${userId}`);
+    }
     toast.success('Cart cleared successfully');
   };
 

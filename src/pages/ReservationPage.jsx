@@ -7,6 +7,7 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import { ImSpinner3 } from "react-icons/im";
 import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router-dom";
 
 const ReservationPage = () => {
   const {
@@ -20,7 +21,7 @@ const ReservationPage = () => {
   });
 
   const [selectedDate, setSelectedDate] = useState(null);
-
+const navigate = useNavigate();
   const onSubmit = async (data) => {
     try {
       const promise = api.post("/reservations", data);
@@ -34,8 +35,9 @@ const ReservationPage = () => {
       await promise;
       reset();
       setSelectedDate(null);
+      navigate('/customer/dashboard/reservations');
     } catch (error) {
-      console.error("Reservation failed:", error);
+      toast.error(error.message || "An unexpected error occurred.");
     }
   };
 
