@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { menuItemSchema } from '../schemas/menuItemSchema';
 import { Switch } from '@headlessui/react';
+import { menuItemSchema } from '@/schemas/menuItemSchema';
 
-const EditMenuItemForm = ({ item, categories, onSubmit, onCancel }) => {
-  const {
+const EditItemModal = ({ item, categories, onSubmit, onCancel }) => {
+ const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -128,4 +128,4 @@ const EditMenuItemForm = ({ item, categories, onSubmit, onCancel }) => {
   );
 };
 
-export default EditMenuItemForm;
+export default EditItemModal;

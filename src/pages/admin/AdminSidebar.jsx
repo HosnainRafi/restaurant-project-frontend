@@ -66,18 +66,6 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/dashboard/add-menu-item"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
-              isActive ? activeLinkClass : inactiveLinkClass
-            }`
-          }
-        >
-          <FaPlusCircle className="text-lg" />
-          Add Menu Item
-        </NavLink>
-
-        <NavLink
           to="/admin/dashboard/menu-management"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
@@ -91,7 +79,7 @@ const AdminSidebar = () => {
 
         {/* Add New Chef */}
         <NavLink
-          to="/admin/dashboard/add-chef"
+          to="/admin/dashboard/manage-chefs"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -99,12 +87,12 @@ const AdminSidebar = () => {
           }
         >
           <PiChefHatFill className="text-lg" />
-          Add New Chef
+          Manage Chefs
         </NavLink>
 
-        {/* Add Food Category */}
+        {/* Manage Categories */}
         <NavLink
-          to="/admin/dashboard/add-food-category"
+          to="/admin/dashboard/manage-food-categories"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
               isActive ? activeLinkClass : inactiveLinkClass
@@ -112,7 +100,7 @@ const AdminSidebar = () => {
           }
         >
           <MdCategory className="text-lg" />
-          Add Food Category
+          Manage Food Categories
         </NavLink>
 
         <NavLink

@@ -2,12 +2,11 @@ import AdminLayout from '@/Layout/AdminLayout';
 import ReservationsDashboard from '@/pages/admin/ReservationsDashboard';
 import OrdersDashboard from '@/pages/admin/OrdersDashboard';
 import MenuManagement from '@/pages/admin/MenuManagement';
-import AddMenuItem from '@/pages/admin/AddMenuItem';
-import AddChef from '@/pages/admin/AddChef';
-import AddFoodCategory from '@/pages/admin/AddFoodCategory';
 import ManageUsers from '@/pages/admin/ManageUsers';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import ErrorPage from '@/pages/Error/Error';
+import ManageChefs from '@/pages/admin/ManageChefs';
+import ManageFoodCategories from '@/pages/admin/ManageFoodCategories';
 
 export const AdminRoutes = [
   {
@@ -40,14 +39,6 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: 'add-menu-item',
-        element: (
-          <AdminProtectedRoute>
-            <AddMenuItem />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
         path: 'menu-management',
         element: (
           <AdminProtectedRoute>
@@ -56,18 +47,18 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: 'add-chef',
+        path: 'manage-chefs',
         element: (
           <AdminProtectedRoute>
-            <AddChef />
+            <ManageChefs />
           </AdminProtectedRoute>
         ),
       },
       {
-        path: 'add-food-category',
+        path: 'manage-food-categories',
         element: (
           <AdminProtectedRoute>
-            <AddFoodCategory />
+            <ManageFoodCategories />
           </AdminProtectedRoute>
         ),
       },

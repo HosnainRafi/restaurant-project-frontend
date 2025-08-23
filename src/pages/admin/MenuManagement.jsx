@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
 import { FaBolt, FaEdit, FaStar, FaTrash, FaUtensils } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { Dialog, Transition } from '@headlessui/react';
-import EditMenuItemForm from '@/components/EditMenuItemForm';
 import Modal from '@/components/Modal';
 import api from '@/lib/api';
-import { Fragment } from 'react';
+import EditItemModal from '../Modal/EditItemModal';
+import ConfirmDeleteModal from '../Modal/ConfirmDeleteModal';
+import AddMenuItemModal from '../Modal/AddMenuItemModal';
 
 const MenuManagement = () => {
   const [categories, setCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [refresh,setRefresh] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -36,7 +37,10 @@ const MenuManagement = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refresh]);
+  const refreshMenu = () => {
+    setRefresh(!refresh);
+  };
 
   const handleEditClick = item => {
     setSelectedItem(item);
@@ -129,6 +133,12 @@ const MenuManagement = () => {
               <FaBolt className="text-pink-600" /> Today's Special
             </span>
           </div>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-primary text-white px-4 py-2 rounded-md"
+          >
+            + Add Item
+          </button>
         </div>
 
         {isLoading ? (
@@ -283,7 +293,7 @@ const MenuManagement = () => {
         title="Edit Menu Item"
       >
         {selectedItem && (
-          <EditMenuItemForm
+          <EditItemModal
             item={selectedItem}
             categories={categories}
             onSubmit={handleEditSubmit}
@@ -293,62 +303,17 @@ const MenuManagement = () => {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Transition appear show={isDeleteModalOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-50"
-          onClose={() => setIsDeleteModalOpen(false)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-50"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-50"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black opacity-50" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="bg-white rounded-xl p-6 max-w-sm mx-auto shadow-lg">
-                <Dialog.Title className="text-lg font-medium text-gray-900">
-                  Confirm Delete
-                </Dialog.Title>
-                <hr className='border border-gray-300' />
-                <Dialog.Description className="text-sm text-gray-600 mt-2">
-                  Are you sure you want to delete{' '}
-                  <strong className='text-primary'>{itemToDelete?.name}</strong>?
-                </Dialog.Description>
-                <div className="mt-4 flex justify-end gap-3">
-                  <button
-                    className="bg-gray-200 text-gray-800 px-4 py-1 rounded hover:bg-gray-300 transition"
-                    onClick={() => setIsDeleteModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-600 transition"
-                    onClick={handleConfirmDelete}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition>
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        itemName={itemToDelete?.name}
+      />
+      <AddMenuItemModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={refreshMenu}
+      />
     </div>
   );
 };
