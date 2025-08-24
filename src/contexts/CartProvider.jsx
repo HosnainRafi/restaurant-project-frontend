@@ -1,18 +1,18 @@
-import { useReducer, useEffect } from 'react';
-import { CartContext } from '../contexts/CartContext';
-import { useAuth } from '../hooks/useAuth';
-import toast from 'react-hot-toast';
+import { useReducer, useEffect } from "react";
+import { CartContext } from "../contexts/CartContext";
+import { useAuth } from "../hooks/useAuth";
+import toast from "react-hot-toast";
 
 const cartReducer = (state, action) => {
   switch (action.type) {
-    case 'ADD_ITEM': {
+    case "ADD_ITEM": {
       const existingItem = state.items.find(
-        item => item._id === action.payload._id
+        (item) => item._id === action.payload._id
       );
       if (existingItem) {
         return {
           ...state,
-          items: state.items.map(item =>
+          items: state.items.map((item) =>
             item._id === action.payload._id
               ? { ...item, quantity: item.quantity + 1 }
               : item
@@ -24,14 +24,14 @@ const cartReducer = (state, action) => {
         items: [...state.items, { ...action.payload, quantity: 1 }],
       };
     }
-    case 'REMOVE_ITEM':
+    case "REMOVE_ITEM":
       return {
         ...state,
-        items: state.items.filter(item => item._id !== action.payload.id),
+        items: state.items.filter((item) => item._id !== action.payload.id),
       };
-    case 'CLEAR_CART':
+    case "CLEAR_CART":
       return { ...state, items: [] };
-    case 'SET_CART':
+    case "SET_CART":
       return { ...state, items: action.payload };
     default:
       return state;
@@ -46,12 +46,11 @@ const getInitialState = (userId) => {
 
 export const CartProvider = ({ children }) => {
   const { user, dbUser } = useAuth();
+  console.log(user, dbUser);
   const userId = user?.uid || dbUser?._id;
 
-  const [state, dispatch] = useReducer(
-    cartReducer,
-    {},
-    () => getInitialState(userId)
+  const [state, dispatch] = useReducer(cartReducer, {}, () =>
+    getInitialState(userId)
   );
 
   // Save cart per user in localStorage
@@ -66,21 +65,21 @@ export const CartProvider = ({ children }) => {
     if (userId) {
       const storedCart = localStorage.getItem(`cartItems_${userId}`);
       dispatch({
-        type: 'SET_CART',
+        type: "SET_CART",
         payload: storedCart ? JSON.parse(storedCart) : [],
       });
     } else {
-      dispatch({ type: 'SET_CART', payload: [] });
+      dispatch({ type: "SET_CART", payload: [] });
     }
   }, [userId]);
 
   const checkUserAndRole = () => {
     if (!user) {
-      toast.error('Please login first');
+      toast.error("Please login first");
       return false;
     }
-    if (dbUser?.role !== 'customer') {
-      toast.error('Only customers can perform this action');
+    if (dbUser?.role !== "customer") {
+      toast.error("Only customers can perform this action");
       return false;
     }
     return true;
@@ -88,23 +87,23 @@ export const CartProvider = ({ children }) => {
 
   const addItem = (item) => {
     if (!checkUserAndRole()) return;
-    dispatch({ type: 'ADD_ITEM', payload: item });
+    dispatch({ type: "ADD_ITEM", payload: item });
     toast.success(`${item?.name} added to cart`);
   };
 
   const removeItem = (id) => {
     if (!checkUserAndRole()) return;
-    dispatch({ type: 'REMOVE_ITEM', payload: { id } });
-    toast.success('Item removed from cart');
+    dispatch({ type: "REMOVE_ITEM", payload: { id } });
+    toast.success("Item removed from cart");
   };
 
   const clearCart = () => {
     if (!checkUserAndRole()) return;
-    dispatch({ type: 'CLEAR_CART' });
+    dispatch({ type: "CLEAR_CART" });
     if (userId) {
       localStorage.removeItem(`cartItems_${userId}`);
     }
-    toast.success('Cart cleared successfully');
+    toast.success("Cart cleared successfully");
   };
 
   const value = {
