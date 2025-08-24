@@ -1,71 +1,98 @@
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import {
   FaCheck,
   FaBox,
   FaFire,
   FaClipboardCheck,
   FaRegClock,
-} from "react-icons/fa";
+} from 'react-icons/fa';
 
 const STEPS = [
-  { id: "pending", label: "Pending", icon: FaRegClock },
-  { id: "confirmed", label: "Confirmed", icon: FaCheck },
-  { id: "preparing", label: "Preparing", icon: FaFire },
-  { id: "ready", label: "Ready", icon: FaBox },
-  { id: "completed", label: "Completed", icon: FaClipboardCheck },
+  {
+    id: 'pending',
+    label: 'Pending',
+    icon: FaRegClock,
+    color: 'text-yellow-500',
+  },
+  {
+    id: 'confirmed',
+    label: 'Confirmed',
+    icon: FaCheck,
+    color: 'text-blue-500',
+  },
+  {
+    id: 'preparing',
+    label: 'Preparing',
+    icon: FaFire,
+    color: 'text-orange-500',
+  },
+  { id: 'ready', label: 'Ready', icon: FaBox, color: 'text-purple-500' },
+  {
+    id: 'completed',
+    label: 'Completed',
+    icon: FaClipboardCheck,
+    color: 'text-green-500',
+  },
 ];
 
 const OrderStatusTracker = ({ currentStatus }) => {
-  const currentStepIndex = STEPS.findIndex((step) => step.id === currentStatus);
+  const currentStepIndex = STEPS.findIndex(step => step.id === currentStatus);
 
-  if (currentStatus === "cancelled") {
+  if (currentStatus === 'cancelled') {
     return (
-      <div className="p-6 bg-red-50 text-red-700 rounded-lg text-center font-semibold">
+      <div className="p-6 bg-red-50 text-red-700 rounded-xl text-center font-semibold shadow-md">
         This order has been cancelled.
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gray-50 rounded-lg">
-      <h3 className="text-xl font-bold mb-8 text-center text-gray-800">
+    <div className="p-6 md:p-10 bg-white rounded-2xl shadow-lg max-w-4xl mx-auto">
+      <h3 className="text-2xl font-bold mb-10 text-center text-gray-800">
         Track Your Order
       </h3>
-      <div className="flex justify-between items-center relative mx-4">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200" />
+
+      {/* Horizontal timeline */}
+      <div className="relative flex items-center justify-between">
+        {/* Full gray line */}
+        <div className="absolute top-6 left-0 w-full h-1 bg-gray-200 rounded-full z-0"></div>
+
+        {/* Active progress line */}
         <motion.div
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-primary"
-          initial={{ width: "0%" }}
+          className="absolute top-6 left-0 h-1 bg-primary rounded-full z-0"
+          initial={{ width: 0 }}
           animate={{
             width: `${(currentStepIndex / (STEPS.length - 1)) * 100}%`,
           }}
-          transition={{ ease: "easeInOut", duration: 0.8 }}
+          transition={{ ease: 'easeInOut', duration: 0.8 }}
         />
 
         {STEPS.map((step, index) => {
+          const StepIcon = step.icon;
           const isActive = index <= currentStepIndex;
           const isCurrent = index === currentStepIndex;
 
           return (
-            <div key={step.id} className="z-10 flex flex-col items-center w-20">
+            <div
+              key={step.id}
+              className="relative z-10 flex flex-col items-center text-center w-20"
+            >
               <motion.div
-                className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors duration-500 ${
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 transition-transform duration-300 cursor-pointer ${
                   isActive
-                    ? "bg-primary border-primary"
-                    : "bg-white border-gray-300"
+                    ? 'bg-primary border-primary text-white shadow-lg'
+                    : 'bg-white border-gray-300 text-gray-400'
                 }`}
-                animate={{ scale: isCurrent ? 1.15 : 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                animate={{ scale: isCurrent ? 1.1 : 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
               >
-                <step.icon
-                  className={`w-6 h-6 transition-colors duration-500 ${
-                    isActive ? "text-white" : "text-gray-400"
-                  }`}
-                />
+                <StepIcon className="w-4 h-4 md:w-5 md:h-5" />
               </motion.div>
+
               <p
-                className={`mt-2 font-semibold text-sm transition-colors duration-500 text-center ${
-                  isActive ? "text-primary" : "text-gray-500"
+                className={`mt-2 md:mt-3 text-sm font-medium transition-colors ${
+                  isActive ? 'text-primary' : 'text-gray-400'
                 }`}
               >
                 {step.label}
@@ -73,6 +100,24 @@ const OrderStatusTracker = ({ currentStatus }) => {
             </div>
           );
         })}
+      </div>
+
+      {/* Status message */}
+      <div className="mt-8 text-center text-gray-700 text-base md:text-lg">
+        {currentStatus !== 'completed' && (
+          <p>
+            Your order is currently{' '}
+            <span className="font-semibold text-primary">
+              {STEPS[currentStepIndex]?.label}
+            </span>
+            .
+          </p>
+        )}
+        {currentStatus === 'completed' && (
+          <p className="font-semibold text-green-600">
+            Your order has been delivered successfully!
+          </p>
+        )}
       </div>
     </div>
   );
