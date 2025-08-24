@@ -98,7 +98,7 @@ const CustomerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
             onClick={() => setSidebarOpen(false)}
           >
             <FaBoxOpen className="text-lg" />
-            Delivered Orders
+            Completed Orders
           </NavLink>
         </nav>
 

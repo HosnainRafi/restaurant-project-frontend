@@ -1,22 +1,23 @@
-import { useForm } from "react-hook-form";
-import { useNavigate, Link } from "react-router-dom";
-import toast from "react-hot-toast";
+import { useForm } from 'react-hook-form';
+import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { ImSpinner3 } from "react-icons/im";
-import { FcGoogle } from "react-icons/fc";
-import api from "@/lib/api"; // 👈 Import your API utility
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { ImSpinner3 } from 'react-icons/im';
+import { FcGoogle } from 'react-icons/fc';
+import api from '@/lib/api';
 
 const Register = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm();
   const navigate = useNavigate();
@@ -24,34 +25,64 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Reusable function to sync the user with your backend
-  const syncUserWithBackend = async (firebaseUser) => {
+  // Try to get user location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async position => {
+          try {
+            const { latitude, longitude } = position.coords;
+            // Use OpenStreetMap Nominatim for reverse geocoding
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await res.json();
+            if (data.address) {
+              const addressString = [
+                data.address.road,
+                data.address.city || data.address.town,
+                data.address.state,
+                data.address.country,
+                data.address.postcode,
+              ]
+                .filter(Boolean)
+                .join(', ');
+              setValue('address', addressString, { shouldValidate: true });
+            }
+          } catch (err) {
+            console.error('Geolocation reverse lookup failed:', err);
+          }
+        },
+        error => {
+          console.warn('Geolocation not available or denied:', error);
+        }
+      );
+    }
+  }, [setValue]);
+
+  const syncUserWithBackend = async firebaseUser => {
     if (!firebaseUser) return;
     try {
       const token = await firebaseUser.getIdToken(true);
       await api.post(
-        "/auth/sync",
+        '/auth/sync',
         {},
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success("Profile synced successfully!");
+      toast.success('Profile synced successfully!');
     } catch (error) {
-      console.error("Backend sync failed:", error);
-      toast.error("Could not sync your profile. Please try logging in again.");
-      // Even if sync fails, the user is logged in, so we still redirect
+      console.error('Backend sync failed:', error);
+      toast.error('Could not sync your profile. Please try logging in again.');
     } finally {
-      navigate("/");
+      navigate('/');
     }
   };
 
-  // Handler for email/password registration
-  const onSubmit = async (data) => {
+  const onSubmit = async data => {
     if (data.password !== data.confirmPassword) {
-      return toast.error("Passwords do not match!");
+      return toast.error('Passwords do not match!');
     }
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -59,33 +90,32 @@ const Register = () => {
         data.email,
         data.password
       );
-      toast.success("Registration successful! Syncing profile...");
+      toast.success('Registration successful! Syncing profile...');
       await syncUserWithBackend(userCredential.user);
     } catch (error) {
       const errorMessage =
-        error.code === "auth/email-already-in-use"
-          ? "This email is already registered."
-          : "Registration failed. Please try again.";
+        error.code === 'auth/email-already-in-use'
+          ? 'This email is already registered.'
+          : 'Registration failed. Please try again.';
       toast.error(errorMessage);
     }
   };
 
-  // Handler for Google sign-in
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      toast.success("Google login successful! Syncing profile...");
+      toast.success('Google login successful! Syncing profile...');
       await syncUserWithBackend(result.user);
     } catch (error) {
-      console.error("Google login failed:", error);
-      toast.error("Google login failed. Please try again.");
+      console.error('Google login failed:', error);
+      toast.error('Google login failed. Please try again.');
     }
   };
 
   return (
     <div className="pt-28 pb-12 flex items-center justify-center bg-gradient-to-br from-[#F9F9F6] to-[#FFF7F2] px-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8">
+      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-8">
         <h2 className="text-3xl font-bold text-center text-primary mb-2">
           Create Account
         </h2>
@@ -93,80 +123,117 @@ const Register = () => {
           Join us and enjoy premium dining experiences
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-3'>
+          <div className=" grid grid-cols-2 gap-2 md:gap-3 items-start">
+            {/* Full Name */}
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                {...register('name', { required: 'Full name is required' })}
+                placeholder="John Doe"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                {...register('email', { required: 'Email is required' })}
+                placeholder="you@example.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-1">
+                Password (6+ characters)
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password', {
+                    required: 'Password is required',
+                    minLength: { value: 6, message: 'Min 6 characters' },
+                  })}
+                  placeholder="••••••"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  {...register('confirmPassword', {
+                    required: 'Please confirm password',
+                  })}
+                  placeholder="••••••"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+          </div>
+          {/* Address */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1">
-              Email Address
+              Address
             </label>
-            <input
-              type="email"
-              {...register("email", { required: "Email is required" })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
-              placeholder="you@example.com"
+            <textarea
+              {...register('address', { required: 'Address is required' })}
+              rows={2}
+              placeholder="Your address"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none resize-none"
             />
-            {errors.email && (
+            {errors.address && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Password (6+ characters)
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none pr-10"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none pr-10"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword.message}
+                {errors.address.message}
               </p>
             )}
           </div>
@@ -177,11 +244,12 @@ const Register = () => {
             className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-primary to-primary-hover text-white py-2.5 rounded-md shadow-lg hover:opacity-90 transition disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isSubmitting && <ImSpinner3 className="animate-spin text-white" />}
-            {isSubmitting ? "Registering..." : "Create Account"}
+            {isSubmitting ? 'Registering...' : 'Create Account'}
           </button>
         </form>
 
-        <div className="flex items-center gap-3 my-6">
+        {/* OR separator */}
+        <div className="flex items-center gap-3 my-4">
           <div className="h-px bg-gray-300 flex-1"></div>
           <span className="text-sm text-gray-500">OR</span>
           <div className="h-px bg-gray-300 flex-1"></div>
@@ -198,7 +266,7 @@ const Register = () => {
         </button>
 
         <p className="text-center mt-6 text-sm text-text-secondary">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link
             to="/login"
             className="text-primary font-medium hover:underline"
