@@ -18,10 +18,6 @@ const FeaturedCategory = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const demoImage = 'https://i.postimg.cc/HW360HhN/category.jpg';
-  const demoDescription = 'Delicious chef-selected dishes curated for you.';
-
   return (
     <section className="py-12 bg-background">
       <div className="max-w-7xl mx-auto px-4">
@@ -39,12 +35,13 @@ const FeaturedCategory = () => {
               <Link
                 key={item._id}
                 to="/menu"
+                state={{ categoryName: item?.name }}
                 className="relative group rounded-lg overflow-hidden shadow-md hover:shadow-xl transition"
               >
                 {/* Image */}
                 <div className="overflow-hidden">
                   <img
-                    src={item?.imageUrl || demoImage}
+                    src={item?.imageUrl}
                     alt={item.name}
                     className="w-full h-28 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                     loading="lazy"
@@ -57,7 +54,7 @@ const FeaturedCategory = () => {
                     {item.name}
                   </h3>
                   <p className="mt-1 text-sm text-gray-200 line-clamp-2">
-                    {demoDescription}
+                    {item?.description}
                   </p>
                 </div>
               </Link>

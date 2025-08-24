@@ -46,7 +46,6 @@ const getInitialState = (userId) => {
 
 export const CartProvider = ({ children }) => {
   const { user, dbUser } = useAuth();
-  console.log(user, dbUser);
   const userId = user?.uid || dbUser?._id;
 
   const [state, dispatch] = useReducer(cartReducer, {}, () =>

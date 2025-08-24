@@ -19,7 +19,7 @@ const SingleMenuItem = ({ item }) => {
         </div>
         <div className="mt-4 flex items-center justify-between">
           <span className="text-lg font-bold text-primary">
-            {formattedPrice}
+           $ {formattedPrice}
           </span>
 
           <div className="flex items-center space-x-2">

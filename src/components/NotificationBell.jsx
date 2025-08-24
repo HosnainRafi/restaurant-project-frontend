@@ -1,11 +1,11 @@
-import { FaBell } from "react-icons/fa";
+import { FaBell } from 'react-icons/fa';
 
 // This component now only displays data. All logic is moved to Navbar.
-const NotificationBell = ({ unreadCount, onOpen }) => {
+const NotificationBell = ({ unreadCount, onOpen, color }) => {
   return (
     <button
       onClick={onOpen}
-      className="relative text-gray-600 hover:text-primary transition-colors"
+      className={`relative ${color} transition-colors`}
     >
       <FaBell size={24} />
       {unreadCount > 0 && (
