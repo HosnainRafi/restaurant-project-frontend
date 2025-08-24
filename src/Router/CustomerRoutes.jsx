@@ -6,6 +6,7 @@ import OrderDetailPage from '@/pages/customer/OrderDetailPage';
 import PaymentPage from '@/pages/PaymentPage';
 import CustomerProtectedRoute from '@/components/CustomerProtectedRoute';
 import ErrorPage from '@/pages/Error/Error';
+import DeliveredOrders from '@/pages/customer/DeliveredOrders';
 
 export const CustomerRoutes = [
   {
@@ -26,6 +27,14 @@ export const CustomerRoutes = [
         element: (
           <CustomerProtectedRoute>
             <MyOrdersPage />
+          </CustomerProtectedRoute>
+        ),
+      },
+      {
+        path: 'completed-orders',
+        element: (
+          <CustomerProtectedRoute>
+            <DeliveredOrders />
           </CustomerProtectedRoute>
         ),
       },

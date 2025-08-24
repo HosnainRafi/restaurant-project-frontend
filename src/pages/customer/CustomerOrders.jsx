@@ -33,7 +33,10 @@ const CustomerOrders = () => {
     const fetchOrders = async () => {
       try {
         const response = await api.get('/auth/me/orders');
-        setOrders(response.data.data);
+        const filteredOrders = response.data.data.filter(
+          order => order.status?.toLowerCase() !== 'completed'
+        );
+        setOrders(filteredOrders);
       } catch (error) {
         toast.error('Failed to load your orders.');
         console.error(error);

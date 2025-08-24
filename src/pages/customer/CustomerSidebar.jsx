@@ -5,6 +5,7 @@ import {
   FaShoppingCart,
   FaUser,
   FaSignOutAlt,
+  FaBoxOpen,
 } from 'react-icons/fa';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -86,6 +87,18 @@ const CustomerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           >
             <FaShoppingCart className="text-lg" />
             My Orders
+          </NavLink>
+          <NavLink
+            to="/customer/dashboard/completed-orders"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 text-sm font-medium ${
+                isActive ? activeLinkClass : inactiveLinkClass
+              }`
+            }
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaBoxOpen className="text-lg" />
+            Delivered Orders
           </NavLink>
         </nav>
 
