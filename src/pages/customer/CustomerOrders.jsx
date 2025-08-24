@@ -1,39 +1,41 @@
-import { useState, useEffect } from "react";
-import { ImSpinner3 } from "react-icons/im";
-import { useNavigate } from "react-router-dom";
-import api from "@/lib/api";
-import toast from "react-hot-toast";
+import { useState, useEffect } from 'react';
+import { ImSpinner3 } from 'react-icons/im';
+import { useNavigate } from 'react-router-dom';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 // Helper to apply colors based on order status
-const getStatusClass = (status) => {
+const getStatusClass = status => {
   switch (status) {
-    case "completed":
-      return "bg-green-100 text-green-700";
-    case "pending":
-      return "bg-yellow-100 text-yellow-700";
-    case "preparing":
-      return "bg-blue-100 text-blue-700";
-    case "ready":
-      return "bg-cyan-100 text-cyan-700";
-    case "cancelled":
-      return "bg-red-100 text-red-700";
+    case 'completed':
+      return 'bg-green-100 text-green-700';
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-700';
+    case 'preparing':
+      return 'bg-blue-100 text-blue-700';
+    case 'ready':
+      return 'bg-cyan-100 text-cyan-700';
+    case 'cancelled':
+      return 'bg-red-100 text-red-700';
     default:
-      return "bg-gray-100 text-gray-700";
+      return 'bg-gray-100 text-gray-700';
   }
 };
 
 const CustomerOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await api.get("/auth/me/orders");
+        const response = await api.get('/auth/me/orders');
         setOrders(response.data.data);
       } catch (error) {
-        toast.error("Failed to load your orders.");
+        toast.error('Failed to load your orders.');
         console.error(error);
       } finally {
         setLoading(false);
@@ -42,42 +44,23 @@ const CustomerOrders = () => {
     fetchOrders();
   }, []);
 
-  const handleViewOrder = (orderId) => {
-    navigate(`/customer/dashboard/my-orders/${orderId}`); // Navigate to the new detail page
+  const handleViewOrder = orderId => {
+    navigate(`/customer/dashboard/my-orders/${orderId}`);
   };
 
-  const handlePayNow = (orderId) => {
+  const handlePayNow = orderId => {
     navigate(`/customer/dashboard/payment/${orderId}`);
   };
 
-  const handleCancelOrder = async (order) => {
-    // --- THIS IS THE NEW LOGIC ---
-    if (order.paymentStatus === "paid") {
-      alert(
-        "This is a paid order. Please call 1-800-RESTAURANT to request a cancellation and refund."
-      );
-      return;
-    }
+  const handleCancelOrder = order => {
+    // Show modal for cancellation instructions
+    setSelectedOrder(order);
+    setModalVisible(true);
+  };
 
-    if (window.confirm("Are you sure you want to cancel this order?")) {
-      toast.loading("Cancelling order...");
-      try {
-        await api.patch(`/auth/me/orders/${order._id}/cancel`);
-        toast.dismiss();
-        toast.success("Order successfully cancelled!");
-        // Refresh the list to show the updated status
-        setOrders((prevOrders) =>
-          prevOrders.map((o) =>
-            o._id === order._id ? { ...o, status: "cancelled" } : o
-          )
-        );
-      } catch (error) {
-        toast.dismiss();
-        toast.error(
-          error.response?.data?.message || "Could not cancel the order."
-        );
-      }
-    }
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedOrder(null);
   };
 
   return (
@@ -114,83 +97,104 @@ const CustomerOrders = () => {
                   <th className="px-4 py-3 text-sm font-medium text-gray-700">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-700 w-36">
-                    Actions
-                  </th>
                   <th className="px-4 py-3 text-sm font-medium text-gray-700">
                     Payment
+                  </th>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-700 w-36">
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => {
-                  // const isCancellable =
-                  //   order.status === "pending" || order.status === "confirmed";
-                  return (
-                    <tr
-                      key={order._id}
-                      className="border-b last:border-b-0 hover:bg-gray-50 transition"
-                    >
-                      <td className="px-4 py-3 font-mono text-sm">
-                        {order.orderNumber}
-                      </td>
-                      <td className="px-4 py-3">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3">{order.items.length}</td>
-                      <td className="px-4 py-3 font-semibold">
-                        ${(order.total / 100).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 capitalize rounded-full text-xs font-medium ${getStatusClass(
-                            order.status
-                          )}`}
+                {orders.map(order => (
+                  <tr
+                    key={order._id}
+                    className="border-b last:border-b-0 hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3 font-mono text-sm">
+                      {order.orderNumber}
+                    </td>
+                    <td className="px-4 py-3">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">{order.items.length}</td>
+                    <td className="px-4 py-3 font-semibold">
+                      ${(order.total / 100).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-1 capitalize rounded-full text-xs font-medium ${getStatusClass(
+                          order.status
+                        )}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {order.paymentStatus === 'unpaid' &&
+                      order.status !== 'cancelled' ? (
+                        <button
+                          onClick={() => handlePayNow(order._id)}
+                          className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
                         >
-                          {order.status}
+                          Pay Now
+                        </button>
+                      ) : (
+                        <span className="capitalize">
+                          {order.paymentStatus}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 flex gap-2">
-                        <button
-                          onClick={() => handleViewOrder(order._id)}
-                          className="w-full bg-primary text-white text-sm py-1 rounded-md hover:bg-primary/90 transition"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => handleCancelOrder(order)} // Pass the full order object
-                          disabled={
-                            order.status === "cancelled" ||
-                            order.status === "completed"
-                          }
-                          className="w-full bg-gray-200 text-gray-700 text-sm py-1 rounded-md hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        {order.paymentStatus === "unpaid" &&
-                        order.status !== "cancelled" ? (
-                          <button
-                            onClick={() => handlePayNow(order._id)}
-                            className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
-                          >
-                            Pay Now
-                          </button>
-                        ) : (
-                          <span className="capitalize">
-                            {order.paymentStatus}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                      )}
+                    </td>
+                    <td className="px-4 py-3 flex gap-2">
+                      <button
+                        onClick={() => handleViewOrder(order._id)}
+                        className="w-full bg-primary text-white text-sm py-1 rounded-md hover:bg-primary/90 transition px-3"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleCancelOrder(order)}
+                        disabled={
+                          order.status === 'cancelled' ||
+                          order.status === 'completed'
+                        }
+                        className="w-full bg-red-100 text-red-700 hover:bg-red-200 disabled:bg-gray-200 disabled:text-gray-500 text-sm font-semibold py-1 rounded-md transition disabled:cursor-not-allowed px-3"
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
+
+      {/* --- Modal --- */}
+      {modalVisible && selectedOrder && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Cancel Order
+            </h3>
+            <p className="text-center text-gray-700 mb-4">
+              To cancel this order, please contact the restaurant:
+            </p>
+            <p className="text-center text-blue-700 font-medium mb-6">
+              1-800-RESTAURANT
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={closeModal}
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
