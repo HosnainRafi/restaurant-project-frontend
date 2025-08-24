@@ -1,7 +1,7 @@
 import { auth } from '../lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ImSpinner3 } from 'react-icons/im';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
@@ -12,14 +12,15 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
+  const location = useLocation();
   const handleLogin = async e => {
     e.preventDefault();
     try {
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Logged in successfully!');
-      navigate('/');
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
     } catch (error) {
       toast.error(error.message);
       console.error('Error logging in:', error);
@@ -101,6 +102,19 @@ const LoginPage = () => {
             >
               Forgot Password?
             </a>
+          </div>
+
+          {/* Register redirect using Link */}
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600">
+              Don’t have an account?{' '}
+              <Link
+                to="/register"
+                className="text-primary font-medium hover:underline"
+              >
+                Create one here
+              </Link>
+            </p>
           </div>
         </form>
       </div>

@@ -80,7 +80,7 @@ export const CartProvider = ({ children }) => {
       return false;
     }
     if (dbUser?.role !== 'customer') {
-      toast.error('Only customers can perform this action');
+      toast.error('Only customers can add items to cart');
       return false;
     }
     return true;
