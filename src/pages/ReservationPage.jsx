@@ -1,13 +1,40 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { reservationSchema } from "../schemas/reservationSchema"; // Ensure this schema matches the backend
-import api from "../lib/api";
-import toast from "react-hot-toast";
-import { useState } from "react";
-import DatePicker from "react-datepicker";
-import { ImSpinner3 } from "react-icons/im";
-import "react-datepicker/dist/react-datepicker.css";
-import { useNavigate } from "react-router-dom";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { reservationSchema } from '../schemas/reservationSchema'; // Ensure this schema matches the backend
+import api from '../lib/api';
+import toast from 'react-hot-toast';
+import { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import { ImSpinner3 } from 'react-icons/im';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useNavigate } from 'react-router-dom';
+
+// Generate 30-min slots from 10:00 to 23:00 in HH:MM format
+const generateTimeSlots = () => {
+  const slots = [];
+  let start = new Date();
+  start.setHours(10, 0, 0, 0); // 10:00
+  let end = new Date();
+  end.setHours(23, 0, 0, 0); // 23:00
+
+  while (start <= end) {
+    const hours = String(start.getHours()).padStart(2, '0');
+    const minutes = String(start.getMinutes()).padStart(2, '0');
+    slots.push(`${hours}:${minutes}`); // backend value → "10:00", "14:30"
+    start.setMinutes(start.getMinutes() + 30);
+  }
+
+  return slots;
+};
+
+// Format HH:MM → h:mm AM/PM for display
+const formatDisplayTime = time => {
+  const [hourStr, minute] = time.split(':');
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12 || 12; // convert "0" or "12" → 12
+  return `${hour}:${minute}${ampm}`;
+};
 
 const ReservationPage = () => {
   const {
@@ -21,15 +48,17 @@ const ReservationPage = () => {
   });
 
   const [selectedDate, setSelectedDate] = useState(null);
-const navigate = useNavigate();
-  const onSubmit = async (data) => {
+  const navigate = useNavigate();
+  const timeSlots = generateTimeSlots();
+
+  const onSubmit = async data => {
     try {
-      const promise = api.post("/reservations", data);
+      const promise = api.post('/reservations', data);
 
       toast.promise(promise, {
-        loading: "Sending your request...",
-        success: "Reservation request sent! We will contact you shortly.",
-        error: "Failed to send request. Please try again.",
+        loading: 'Sending your request...',
+        success: 'Reservation request sent! We will contact you shortly.',
+        error: 'Failed to send request. Please try again.',
       });
 
       await promise;
@@ -37,7 +66,7 @@ const navigate = useNavigate();
       setSelectedDate(null);
       navigate('/customer/dashboard/reservations');
     } catch (error) {
-      toast.error(error.message || "An unexpected error occurred.");
+      toast.error(error.message || 'An unexpected error occurred.');
     }
   };
 
@@ -64,12 +93,10 @@ const navigate = useNavigate();
               </label>
               <input
                 type="text"
-                // --- THE FIX: Register as a nested field ---
-                {...register("customer.name")}
+                {...register('customer.name')}
                 placeholder="John Doe"
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
-              {/* --- THE FIX: Access nested error message --- */}
               {errors.customer?.name && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.customer.name.message}
@@ -84,12 +111,10 @@ const navigate = useNavigate();
               </label>
               <input
                 type="tel"
-                // --- THE FIX: Register as a nested field ---
-                {...register("customer.phone")}
+                {...register('customer.phone')}
                 placeholder="+1 234 567 890"
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
-              {/* --- THE FIX: Access nested error message --- */}
               {errors.customer?.phone && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.customer.phone.message}
@@ -104,7 +129,7 @@ const navigate = useNavigate();
               </label>
               <input
                 type="number"
-                {...register("partySize")}
+                {...register('partySize')}
                 min="1"
                 max="20"
                 placeholder="2"
@@ -124,9 +149,9 @@ const navigate = useNavigate();
               </label>
               <DatePicker
                 selected={selectedDate}
-                onChange={(date) => {
+                onChange={date => {
                   setSelectedDate(date);
-                  setValue("date", date?.toISOString().split("T")[0], {
+                  setValue('date', date?.toISOString().split('T')[0], {
                     shouldValidate: true,
                   });
                 }}
@@ -146,11 +171,17 @@ const navigate = useNavigate();
               <label className="block text-gray-700 font-medium mb-1">
                 Time
               </label>
-              <input
-                type="time"
-                {...register("time")}
+              <select
+                {...register('time')}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              >
+                <option value="">Select a time</option>
+                {timeSlots.map((slot, idx) => (
+                  <option key={idx} value={slot}>
+                    {formatDisplayTime(slot)}
+                  </option>
+                ))}
+              </select>
               {errors.time && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.time.message}
@@ -165,7 +196,7 @@ const navigate = useNavigate();
               Special Requests (Optional)
             </label>
             <textarea
-              {...register("note")}
+              {...register('note')}
               rows="3"
               placeholder="Any dietary restrictions or special occasions?"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
@@ -181,7 +212,7 @@ const navigate = useNavigate();
             {isSubmitting ? (
               <ImSpinner3 className="animate-spin text-white h-5 w-5" />
             ) : (
-              "Send Reservation Request"
+              'Send Reservation Request'
             )}
           </button>
         </form>
