@@ -3,56 +3,77 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination, Autoplay } from 'swiper/modules';
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
 
-const testimonials = [
-  {
-    id: 1,
-    name: 'Sophia Martinez',
-    role: 'Food Blogger',
-    image: 'https://i.pravatar.cc/100?img=1',
-    review:
-      'Absolutely loved the Grilled Salmon! The flavors were perfectly balanced, and the atmosphere was so cozy.',
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: 'Liam Johnson',
-    role: 'Local Guide',
-    image: 'https://i.pravatar.cc/100?img=2',
-    review:
-      'The steak was juicy and cooked to perfection. Definitely one of the best dining experiences I’ve had in town.',
-    rating: 4,
-  },
-  {
-    id: 3,
-    name: 'Emily Davis',
-    role: 'Traveler',
-    image: 'https://i.pravatar.cc/100?img=3',
-    review:
-      'A hidden gem! The pasta was so delicious and creamy, I can’t wait to come back with my friends.',
-    rating: 5,
-  },
-  {
-    id: 4,
-    name: 'Daniel Carter',
-    role: 'Photographer',
-    image: 'https://i.pravatar.cc/100?img=4',
-    review:
-      'The desserts were heavenly! Perfect spot to relax after a long day.',
-    rating: 5,
-  },
-  {
-    id: 5,
-    name: 'Olivia Brown',
-    role: 'Entrepreneur',
-    image: 'https://i.pravatar.cc/100?img=5',
-    review:
-      'Amazing staff and wonderful food presentation. Truly exceeded expectations!',
-    rating: 4,
-  },
-];
+// const testimonials = [
+//   {
+//     id: 1,
+//     name: 'Sophia Martinez',
+//     role: 'Food Blogger',
+//     image: 'https://i.pravatar.cc/100?img=1',
+//     review:
+//       'Absolutely loved the Grilled Salmon! The flavors were perfectly balanced, and the atmosphere was so cozy.',
+//     rating: 5,
+//   },
+//   {
+//     id: 2,
+//     name: 'Liam Johnson',
+//     role: 'Local Guide',
+//     image: 'https://i.pravatar.cc/100?img=2',
+//     review:
+//       'The steak was juicy and cooked to perfection. Definitely one of the best dining experiences I’ve had in town.',
+//     rating: 4,
+//   },
+//   {
+//     id: 3,
+//     name: 'Emily Davis',
+//     role: 'Traveler',
+//     image: 'https://i.pravatar.cc/100?img=3',
+//     review:
+//       'A hidden gem! The pasta was so delicious and creamy, I can’t wait to come back with my friends.',
+//     rating: 5,
+//   },
+//   {
+//     id: 4,
+//     name: 'Daniel Carter',
+//     role: 'Photographer',
+//     image: 'https://i.pravatar.cc/100?img=4',
+//     review:
+//       'The desserts were heavenly! Perfect spot to relax after a long day.',
+//     rating: 5,
+//   },
+//   {
+//     id: 5,
+//     name: 'Olivia Brown',
+//     role: 'Entrepreneur',
+//     image: 'https://i.pravatar.cc/100?img=5',
+//     review:
+//       'Amazing staff and wonderful food presentation. Truly exceeded expectations!',
+//     rating: 4,
+//   },
+// ];
+
 
 const Testimonials = () => {
+  const [reviews, setReviews] = useState([]);
+  const fetchReviews = async () => {
+    try {
+      const response = await api.get('/reviews/my-reviews');
+      if (response.data.success) {
+        setReviews(response.data.data);
+      } else {
+        console.error('Failed to fetch reviews:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  // Fetch reviews on component mount
+  useEffect(() => {
+    fetchReviews();
+  }, []);
   return (
     <section className="relative py-20">
       {/* Background Video */}
@@ -88,21 +109,21 @@ const Testimonials = () => {
           }}
           className="pb-10"
         >
-          {testimonials.map(t => (
-            <SwiperSlide key={t.id}>
+          {reviews.map(review => (
+            <SwiperSlide key={review.id}>
               <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 shadow-md flex flex-col items-center h-64">
                 <img
-                  src={t.image}
-                  alt={t.name}
+                  src={review?.photoURL }
+                  alt={review.customerName}
                   className="w-14 h-14 rounded-full object-cover mb-3"
                 />
                 {/* Review */}
                 <p className="text-sm text-gray-100 text-center line-clamp-3 flex-grow">
-                  "{t.review}"
+                  "{review.comment}"
                 </p>
                 {/* Stars */}
                 <div className="flex justify-center gap-1 mt-2">
-                  {Array.from({ length: t.rating }).map((_, i) => (
+                  {Array.from({ length: review.rating }).map((_, i) => (
                     <Star
                       key={i}
                       className="w-4 h-4"
@@ -113,9 +134,9 @@ const Testimonials = () => {
                 </div>
                 {/* Name */}
                 <h4 className="mt-2 text-sm font-semibold text-[#8B1E3F]">
-                  {t.name}
+                  {review.customerName}
                 </h4>
-                <p className="text-xs text-gray-300">{t.role}</p>
+                {/* <p className="text-xs text-gray-300">{review.role}</p> */}
               </div>
             </SwiperSlide>
           ))}

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { FaBoxOpen, FaCalendarAlt, FaStar, FaRegStar } from "react-icons/fa";
 import api from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const DeliveredOrders = () => {
+  const { user, dbUser } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState({});
@@ -35,7 +37,7 @@ const DeliveredOrders = () => {
     setErrors((prev) => ({ ...prev, [id]: { ...prev[id], rating: "" } }));
   };
 
-  const submitReview = (id) => {
+  const submitReview =async (id) => {
     const review = reviews[id] || {};
     let error = {};
     if (!review.text) error.text = "Review cannot be empty";
@@ -44,8 +46,26 @@ const DeliveredOrders = () => {
     if (Object.keys(error).length > 0) return;
 
     // Simulate API call will be here
-    console.log("Review submitted:", { id, review });
+     try {
+    const { data } = await api.post("/reviews", {
+      orderId: id,
+      rating: review.rating,
+      comment: review.text,
+      customerName: dbUser?.name,
+      customerPhoto: dbUser?.photoURL,
+    });
+
+    console.log("Review submitted:", data);
+
+    // Clear review input after successful submission
     setReviews((prev) => ({ ...prev, [id]: {} }));
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    setErrors((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], api: "Something went wrong. Please try again." },
+    }));
+  }
   };
 
   if (loading)
