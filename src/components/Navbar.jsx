@@ -117,7 +117,7 @@ const Navbar = ({ onCartClick }) => {
     const baseColor = scrolled ? 'text-text-secondary' : 'text-sky-500';
     const activeColor = 'text-primary';
     return isActive
-      ? `${activeColor} font-semibold border-b-2 border-primary text-lg transition bg-white/5`
+      ? `${activeColor} font-semibold border-b-2 border-primary text-lg transition`
       : `${baseColor} hover:text-primary transition text-lg`;
   };
 
