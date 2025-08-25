@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile, // Import updateProfile
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useState, useEffect } from "react";
@@ -25,14 +26,12 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Try to get user location on mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
             const { latitude, longitude } = position.coords;
-            // Use OpenStreetMap Nominatim for reverse geocoding
             const res = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
             );
@@ -60,27 +59,25 @@ const Register = () => {
     }
   }, [setValue]);
 
-  const syncUserWithBackend = async (firebaseUser, registrationData) => {
+  const syncUserWithBackend = async (firebaseUser, registrationData = null) => {
     if (!firebaseUser) return;
     try {
       const token = await firebaseUser.getIdToken(true);
 
-      // --- MODIFIED: Prepare the payload with data from the form ---
       const payload = {
-        name: registrationData.name,
+        name: registrationData?.name || firebaseUser.displayName,
         email: firebaseUser.email,
-        // Convert the single address string into the array format our backend expects
-        address: {
-          label: "Primary", // Default label for the first address
-          details: registrationData.address,
-        },
+        address: registrationData?.address
+          ? {
+              label: "Primary",
+              details: registrationData.address,
+            }
+          : undefined,
       };
 
       await api.post("/auth/sync", payload, {
-        // Send the payload
         headers: { Authorization: `Bearer ${token}` },
       });
-
       toast.success("Profile synced successfully!");
     } catch (error) {
       console.error("Backend sync failed:", error);
@@ -100,11 +97,19 @@ const Register = () => {
         data.email,
         data.password
       );
+
+      await updateProfile(userCredential.user, {
+        displayName: data.name,
+      });
+
       toast.success("Registration successful! Syncing profile...");
-      // --- MODIFIED: Pass the form data `data` to the sync function ---
       await syncUserWithBackend(userCredential.user, data);
     } catch (error) {
-      // ... (error handling is unchanged)
+      const errorMessage =
+        error.code === "auth/email-already-in-use"
+          ? "This email is already registered."
+          : "Registration failed. Please try again.";
+      toast.error(errorMessage);
     }
   };
 

@@ -4,11 +4,19 @@ import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { ImSpinner3 } from "react-icons/im";
-import { PlusCircle, Trash2 } from "lucide-react";
+// --- THIS IS THE FIX: Import the missing icons ---
+import { PlusCircle, Trash2, Eye, EyeOff } from "lucide-react";
+import { auth } from "@/lib/firebase";
 
 const CustomerProfile = () => {
   const { dbUser, loading: authLoading, refetchUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const isEmailPasswordUser = auth.currentUser?.providerData.some(
+    (provider) => provider.providerId === "password"
+  );
 
   const {
     register,
@@ -24,6 +32,8 @@ const CustomerProfile = () => {
       email: "",
       photoURL: "",
       addresses: [],
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
@@ -34,7 +44,6 @@ const CustomerProfile = () => {
 
   const photoURL = watch("photoURL");
 
-  // Load user data into the form when the component mounts
   useEffect(() => {
     if (dbUser) {
       reset({
@@ -48,7 +57,6 @@ const CustomerProfile = () => {
     }
   }, [dbUser, reset]);
 
-  // --- START: THE CLOUDINARY FIX ---
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -59,7 +67,7 @@ const CustomerProfile = () => {
     formData.append(
       "upload_preset",
       import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-    ); // Use your preset name
+    );
 
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
@@ -70,7 +78,6 @@ const CustomerProfile = () => {
         body: formData,
       });
       const data = await res.json();
-
       if (data.secure_url) {
         setValue("photoURL", data.secure_url, { shouldDirty: true });
         toast.success("Image uploaded!");
@@ -84,15 +91,42 @@ const CustomerProfile = () => {
       setIsUploading(false);
     }
   };
-  // --- END: THE CLOUDINARY FIX ---
 
   const onSubmit = async (data) => {
+    const profileUpdatePromise = api.patch("/auth/me", {
+      name: data.name,
+      photoURL: data.photoURL,
+      addresses: data.addresses,
+    });
+
+    toast.promise(profileUpdatePromise, {
+      loading: "Updating profile...",
+      success: "Profile updated!",
+      error: "Failed to update profile.",
+    });
+
+    let passwordUpdatePromise = Promise.resolve();
+
+    if (isEmailPasswordUser && data.newPassword) {
+      if (data.newPassword !== data.confirmPassword) {
+        return toast.error("New passwords do not match.");
+      }
+      passwordUpdatePromise = api.patch("/auth/me/change-password", {
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      });
+      toast.promise(passwordUpdatePromise, {
+        loading: "Updating password...",
+        success: "Password updated!",
+        error: "Failed to update password.",
+      });
+    }
+
     try {
-      await api.patch("/auth/me", data);
-      toast.success("Profile updated successfully!");
-      refetchUser(); // Refresh auth context with new data
+      await Promise.all([profileUpdatePromise, passwordUpdatePromise]);
+      refetchUser();
     } catch (error) {
-      toast.error("Failed to update profile.");
+      console.error("Update failed", error);
     }
   };
 
@@ -108,7 +142,10 @@ const CustomerProfile = () => {
           <div className="flex items-center space-x-6">
             <div className="relative">
               <img
-                src={photoURL || "/default-avatar.png"}
+                src={
+                  photoURL ||
+                  "https://res.cloudinary.com/du8e3wgew/image/upload/v1756087795/dx47mzwd8xxtxacrbd3h.png"
+                }
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-primary"
               />
@@ -159,6 +196,56 @@ const CustomerProfile = () => {
               className="form-input bg-gray-100"
             />
           </div>
+
+          {isEmailPasswordUser && (
+            <div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2 border-t pt-4">
+                Change Password
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    New Password
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    {...register("newPassword")}
+                    placeholder="Leave blank to keep current"
+                    className="form-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-9 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    {...register("confirmPassword")}
+                    placeholder="Confirm new password"
+                    className="form-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-9 text-gray-500"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <h3 className="text-lg font-semibold text-text-primary mb-2">
