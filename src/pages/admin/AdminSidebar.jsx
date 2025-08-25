@@ -7,6 +7,7 @@ import {
   FaSignOutAlt,
   FaPlusCircle,
   FaUsers,
+  FaUser,
 } from 'react-icons/fa';
 import { PiChefHatFill } from 'react-icons/pi';
 import { MdCategory } from 'react-icons/md';
@@ -116,15 +117,28 @@ const AdminSidebar = () => {
         </NavLink>
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={() => signOut(auth)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition"
+      <div className="mt-auto px-3 py-2 flex flex-col gap-2 border-t border-gray-200">
+        <NavLink
+          to="/admin/dashboard/profile"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+              isActive ? activeLinkClass : inactiveLinkClass
+            }`
+          }
         >
-          <FaSignOutAlt />
-          Logout
-        </button>
+          <FaUser className="text-lg" />
+          Profile
+        </NavLink>
+        {/* Logout Button */}
+        <div>
+          <button
+            onClick={() => signOut(auth)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition"
+          >
+            <FaSignOutAlt />
+            Logout
+          </button>
+        </div>
       </div>
     </aside>
   );

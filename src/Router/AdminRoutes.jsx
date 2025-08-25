@@ -7,6 +7,7 @@ import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import ErrorPage from '@/pages/Error/Error';
 import ManageChefs from '@/pages/admin/ManageChefs';
 import ManageFoodCategories from '@/pages/admin/ManageFoodCategories';
+import AdminProfile from '@/pages/admin/AdminProfile';
 
 export const AdminRoutes = [
   {
@@ -67,6 +68,14 @@ export const AdminRoutes = [
         element: (
           <AdminProtectedRoute>
             <ManageUsers />
+          </AdminProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <AdminProtectedRoute>
+            <AdminProfile />
           </AdminProtectedRoute>
         ),
       },

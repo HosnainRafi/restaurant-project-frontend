@@ -1,23 +1,17 @@
-import { useForm, useFieldArray } from "react-hook-form";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import api from "@/lib/api";
-import { useAuth } from "@/hooks/useAuth";
-import { ImSpinner3 } from "react-icons/im";
-import { PlusCircle, Trash2, Eye, EyeOff } from "lucide-react";
-import { auth } from "@/lib/firebase";
-import {
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
+import { useForm, useFieldArray } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { ImSpinner3 } from 'react-icons/im';
+import { PlusCircle, Trash2, Eye, EyeOff } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 
-const CustomerProfile = () => {
-  const { dbUser, loading: authLoading, refetchDbUser } = useAuth();
-  console.log(refetchDbUser);
-  const [isUpdating, setIsUpdating] = useState(false);
+const AdminProfile = () => {
+  const { dbUser, loading: authLoading, refetchUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const isEmailPasswordUser = auth.currentUser?.providerData.some(
     provider => provider.providerId === 'password'
@@ -28,17 +22,17 @@ const CustomerProfile = () => {
     handleSubmit,
     control,
     reset,
-    watch,
     setValue,
-    formState: { errors },
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       name: '',
       email: '',
       photoURL: '',
       addresses: [],
-      currentPassword: "",
-      newPassword: "",
+      newPassword: '',
+      confirmPassword: '',
     },
   });
 
@@ -46,7 +40,8 @@ const CustomerProfile = () => {
     control,
     name: 'addresses',
   });
-  const photoURL = watch("photoURL");
+
+  const photoURL = watch('photoURL');
 
   useEffect(() => {
     if (dbUser) {
@@ -56,9 +51,7 @@ const CustomerProfile = () => {
         photoURL: dbUser.photoURL || '',
         addresses: dbUser.addresses?.length
           ? dbUser.addresses
-          : [{ label: "Primary", details: "" }],
-        currentPassword: "",
-        newPassword: "",
+          : [{ label: 'Primary', details: '' }],
       });
     }
   }, [dbUser, reset]);
@@ -66,6 +59,7 @@ const CustomerProfile = () => {
   const handleImageUpload = async e => {
     const file = e.target.files[0];
     if (!file) return;
+
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -73,10 +67,15 @@ const CustomerProfile = () => {
       'upload_preset',
       import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
     );
+
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
     try {
-      const res = await fetch(url, { method: "POST", body: formData });
+      const res = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
       const data = await res.json();
       if (data.secure_url) {
         setValue('photoURL', data.secure_url, { shouldDirty: true });
@@ -85,64 +84,54 @@ const CustomerProfile = () => {
         throw new Error(data.error?.message || 'Cloudinary upload failed');
       }
     } catch (error) {
-      toast.error("Image upload failed.");
+      console.error('Cloudinary upload failed:', error);
+      toast.error('Image upload failed. Please try again.');
     } finally {
       setIsUploading(false);
     }
   };
 
-  const onSubmit = async (data) => {
-    setIsUpdating(true);
-    try {
-      // Step 1: Update non-sensitive profile info via your backend
-      await api.patch("/auth/me", {
-        name: data.name,
-        photoURL: data.photoURL,
-        addresses: data.addresses,
+  const onSubmit = async data => {
+    const profileUpdatePromise = api.patch('/auth/me', {
+      name: data.name,
+      photoURL: data.photoURL,
+      addresses: data.addresses,
+    });
+
+    toast.promise(profileUpdatePromise, {
+      loading: 'Updating profile...',
+      success: 'Profile updated!',
+      error: 'Failed to update profile.',
+    });
+
+    let passwordUpdatePromise = Promise.resolve();
+
+    if (isEmailPasswordUser && data.newPassword) {
+      if (data.newPassword !== data.confirmPassword) {
+        return toast.error('New passwords do not match.');
+      }
+      passwordUpdatePromise = api.patch('/auth/me/change-password', {
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
       });
-      toast.success("Profile details updated!");
-      refetchDbUser();
+      toast.promise(passwordUpdatePromise, {
+        loading: 'Updating password...',
+        success: 'Password updated!',
+        error: 'Failed to update password.',
+      });
+    }
 
-      // Step 2: Handle secure password change entirely on the client
-      if (isEmailPasswordUser && data.newPassword) {
-        if (!data.currentPassword) {
-          toast.error("Please enter your current password to set a new one.");
-          setIsUpdating(false);
-          return;
-        }
-
-        const user = auth.currentUser;
-        const credential = EmailAuthProvider.credential(
-          user.email,
-          data.currentPassword
-        );
-
-        // Re-authenticate the user with their current password
-        await reauthenticateWithCredential(user, credential);
-
-        // If re-authentication succeeds, update the password
-        await updatePassword(user, data.newPassword);
-
-        toast.success("Password changed successfully!");
-        // Clear the password fields from the form for security
-        reset({ ...data, currentPassword: "", newPassword: "" });
-      }
+    try {
+      await Promise.all([profileUpdatePromise, passwordUpdatePromise]);
+      refetchUser();
     } catch (error) {
-      // Handle specific Firebase errors for a better user experience
-      if (error.code === "auth/wrong-password") {
-        toast.error("Incorrect current password.");
-      } else if (error.code) {
-        toast.error("Failed to change password. Please try again.");
-      } else {
-        // Handle potential errors from your api.patch call
-        console.error("An error occurred during profile update:", error);
-      }
-    } finally {
-      setIsUpdating(false);
+      console.error('Update failed', error);
     }
   };
 
-  if (authLoading) return <div className="text-center p-20">Loading...</div>;
+  if (authLoading) {
+    return <div className="text-center p-20">Loading profile...</div>;
+  }
 
   return (
     <div className="pt-24 pb-12 bg-gray-50">
@@ -187,12 +176,27 @@ const CustomerProfile = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Full Name
-            </label>
-            <input {...register("name")} className="form-input" />
-          </div>
+          {/* Basic Info Section */}
+          <div className="p-4 border rounded-lg bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Basic Info
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Full Name
+                </label>
+                <input
+                  {...register('name', { required: 'Name is required' })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
 
               {/* Email */}
               <div>
@@ -215,26 +219,16 @@ const CustomerProfile = () => {
                 Security
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    {...register("currentPassword")}
-                    className="form-input"
-                    placeholder="Enter current password"
-                  />
-                </div>
+                {/* New Password */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-600 mb-1">
                     New Password
                   </label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    {...register("newPassword")}
-                    className="form-input"
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('newPassword')}
                     placeholder="Leave blank to keep current"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                   />
                   <button
                     type="button"
@@ -242,6 +236,30 @@ const CustomerProfile = () => {
                     className="absolute right-3 top-9 text-gray-400"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Confirm Password
+                  </label>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    {...register('confirmPassword')}
+                    placeholder="Confirm new password"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-9 text-gray-400"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -294,14 +312,11 @@ const CustomerProfile = () => {
           <div className="pt-4 text-right">
             <button
               type="submit"
-              disabled={isUpdating || isUploading}
-              className="w-full md:w-auto flex justify-center items-center gap-2 bg-gradient-to-r from-primary to-primary-hover text-white py-2.5 px-6 rounded-md shadow-lg hover:opacity-90 transition disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={isSubmitting || isUploading}
+              className="w-full md:w-auto flex justify-center items-center gap-2 bg-primary text-white py-2.5 px-6 rounded-md shadow hover:bg-primary-hover transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isUpdating || isUploading ? (
-                <ImSpinner3 className="animate-spin" />
-              ) : (
-                "Save Changes"
-              )}
+              {isSubmitting && <ImSpinner3 className="animate-spin" />}
+              Save Changes
             </button>
           </div>
         </form>
@@ -310,4 +325,4 @@ const CustomerProfile = () => {
   );
 };
 
-export default CustomerProfile;
+export default AdminProfile;

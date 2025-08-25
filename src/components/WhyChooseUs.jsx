@@ -1,6 +1,6 @@
 const WhyChooseUs = () => {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-gradient-to-br from-background to-muted/40">
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Heading */}
         <h2 className="text-2xl md:text-3xl font-bold text-primary">
