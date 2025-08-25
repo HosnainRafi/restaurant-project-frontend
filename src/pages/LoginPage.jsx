@@ -1,10 +1,16 @@
 import { auth } from '../lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from 'firebase/auth';
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ImSpinner3 } from 'react-icons/im';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import api from '@/lib/api';
+import { FcGoogle } from 'react-icons/fc';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -28,6 +34,45 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      toast.success('Google login successful! Syncing profile...');
+      await syncUserWithBackend(result.user);
+    } catch (error) {
+      console.error('Google login failed:', error);
+      toast.error('Google login failed. Please try again.');
+    }
+  };
+
+  const syncUserWithBackend = async (firebaseUser, registrationData = null) => {
+    if (!firebaseUser) return;
+    try {
+      const token = await firebaseUser.getIdToken(true);
+
+      const payload = {
+        name: registrationData?.name || firebaseUser.displayName,
+        email: firebaseUser.email,
+        address: registrationData?.address
+          ? {
+              label: 'Primary',
+              details: registrationData.address,
+            }
+          : undefined,
+      };
+
+      await api.post('/auth/sync', payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success('Profile synced successfully!');
+    } catch (error) {
+      console.error('Backend sync failed:', error);
+      toast.error('Could not sync your profile. Please try logging in again.');
+    } finally {
+      navigate('/');
+    }
+  };
 
   return (
     <div className="pt-28 mb-12 flex items-center justify-center px-4 bg-gradient-to-br from-[#F9F9F6] to-[#FFF7F2] min-h-[calc(100vh - 395px)]">
@@ -39,7 +84,7 @@ const LoginPage = () => {
           Welcome Back
         </h2>
         <p className="text-center text-text-secondary text-sm mb-8">
-          Login to access your admin dashboard
+          Login to access your dashboard
         </p>
 
         <form onSubmit={handleLogin} className="space-y-5 relative z-10">
@@ -94,7 +139,24 @@ const LoginPage = () => {
             {loading && <ImSpinner3 className="animate-spin text-white" />}
             {loading ? 'Logging in...' : 'Login'}
           </button>
-
+          <div>
+            {' '}
+            {/* OR separator */}
+            <div className="flex items-center gap-3 my-4">
+              <div className="h-px bg-gray-300 flex-1"></div>
+              <span className="text-sm text-gray-500">OR</span>
+              <div className="h-px bg-gray-300 flex-1"></div>
+            </div>
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-md py-1.5 shadow-sm hover:bg-gray-50 transition"
+            >
+              <FcGoogle size={20} />
+              <span className="text-gray-700 font-medium">
+                Continue with Google
+              </span>
+            </button>
+          </div>
           <div className="text-center mt-3">
             <a
               href="#"

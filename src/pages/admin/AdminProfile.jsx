@@ -7,7 +7,7 @@ import { ImSpinner3 } from 'react-icons/im';
 import { PlusCircle, Trash2, Eye, EyeOff } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 
-const CustomerProfile = () => {
+const AdminProfile = () => {
   const { dbUser, loading: authLoading, refetchUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -325,4 +325,4 @@ const CustomerProfile = () => {
   );
 };
 
-export default CustomerProfile;
+export default AdminProfile;
