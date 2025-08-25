@@ -1,3 +1,4 @@
+import AboutSection from '@/components/AboutSection';
 import ChefsRecommendations from '@/components/ChefsRecommendations';
 import FeaturedCategory from '@/components/FeaturedCategory';
 import FeaturedDishes from '@/components/FeaturedDishes';
@@ -11,6 +12,7 @@ const HomePage = () => {
   return (
     <div>
       <HeroSection />
+      <AboutSection />
       <FeaturedCategory />
       <FeaturedDishes />
       <TodaysMenu />

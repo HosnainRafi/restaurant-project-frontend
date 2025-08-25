@@ -39,7 +39,7 @@ const SingleMenuItem = ({ item }) => {
         <img
           src={item.imageUrl || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
           alt={item.name}
-          className="w-full h-36 object-center object-cover transition-transform duration-500 ease-in-out group-hover:scale-110 hover:rotate-12"
+          className="w-full h-36 object-center object-cover transition-transform duration-500 ease-in-out group-hover:scale-110 hover:animate-spin"
         />
       </div>
     </div>

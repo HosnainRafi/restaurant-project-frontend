@@ -1,18 +1,19 @@
-import { useForm } from "react-hook-form";
-import { useNavigate, Link } from "react-router-dom";
-import toast from "react-hot-toast";
+import { useForm } from 'react-hook-form';
+import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
   updateProfile, // Import updateProfile
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { ImSpinner3 } from "react-icons/im";
-import { FcGoogle } from "react-icons/fc";
-import api from "@/lib/api";
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { ImSpinner3 } from 'react-icons/im';
+import { FcGoogle } from 'react-icons/fc';
+import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 const Register = () => {
   const {
@@ -25,11 +26,11 @@ const Register = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const { refetchDbUser } = useAuth();
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        async position => {
           try {
             const { latitude, longitude } = position.coords;
             const res = await fetch(
@@ -45,15 +46,15 @@ const Register = () => {
                 data.address.postcode,
               ]
                 .filter(Boolean)
-                .join(", ");
-              setValue("address", addressString, { shouldValidate: true });
+                .join(', ');
+              setValue('address', addressString, { shouldValidate: true });
             }
           } catch (err) {
-            console.error("Geolocation reverse lookup failed:", err);
+            console.error('Geolocation reverse lookup failed:', err);
           }
         },
-        (error) => {
-          console.warn("Geolocation not available or denied:", error);
+        error => {
+          console.warn('Geolocation not available or denied:', error);
         }
       );
     }
@@ -69,27 +70,28 @@ const Register = () => {
         email: firebaseUser.email,
         address: registrationData?.address
           ? {
-              label: "Primary",
+              label: 'Primary',
               details: registrationData.address,
             }
           : undefined,
       };
 
-      await api.post("/auth/sync", payload, {
+      await api.post('/auth/sync', payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success("Profile synced successfully!");
+      toast.success('Profile synced successfully!');
     } catch (error) {
-      console.error("Backend sync failed:", error);
-      toast.error("Could not sync your profile. Please try logging in again.");
+      console.error('Backend sync failed:', error);
+      toast.error('Could not sync your profile. Please try logging in again.');
     } finally {
-      navigate("/");
+      refetchDbUser();
+      navigate('/');
     }
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async data => {
     if (data.password !== data.confirmPassword) {
-      return toast.error("Passwords do not match!");
+      return toast.error('Passwords do not match!');
     }
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -102,13 +104,13 @@ const Register = () => {
         displayName: data.name,
       });
 
-      toast.success("Registration successful! Syncing profile...");
+      toast.success('Registration successful! Syncing profile...');
       await syncUserWithBackend(userCredential.user, data);
     } catch (error) {
       const errorMessage =
-        error.code === "auth/email-already-in-use"
-          ? "This email is already registered."
-          : "Registration failed. Please try again.";
+        error.code === 'auth/email-already-in-use'
+          ? 'This email is already registered.'
+          : 'Registration failed. Please try again.';
       toast.error(errorMessage);
     }
   };
@@ -117,11 +119,11 @@ const Register = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      toast.success("Google login successful! Syncing profile...");
+      toast.success('Google login successful! Syncing profile...');
       await syncUserWithBackend(result.user);
     } catch (error) {
-      console.error("Google login failed:", error);
-      toast.error("Google login failed. Please try again.");
+      console.error('Google login failed:', error);
+      toast.error('Google login failed. Please try again.');
     }
   };
 
@@ -144,7 +146,7 @@ const Register = () => {
               </label>
               <input
                 type="text"
-                {...register("name", { required: "Full name is required" })}
+                {...register('name', { required: 'Full name is required' })}
                 placeholder="John Doe"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
               />
@@ -162,7 +164,7 @@ const Register = () => {
               </label>
               <input
                 type="email"
-                {...register("email", { required: "Email is required" })}
+                {...register('email', { required: 'Email is required' })}
                 placeholder="you@example.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
               />
@@ -180,10 +182,10 @@ const Register = () => {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: { value: 6, message: "Min 6 characters" },
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password', {
+                    required: 'Password is required',
+                    minLength: { value: 6, message: 'Min 6 characters' },
                   })}
                   placeholder="••••••"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none pr-10"
@@ -210,9 +212,9 @@ const Register = () => {
               </label>
               <div className="relative">
                 <input
-                  type={showConfirm ? "text" : "password"}
-                  {...register("confirmPassword", {
-                    required: "Please confirm password",
+                  type={showConfirm ? 'text' : 'password'}
+                  {...register('confirmPassword', {
+                    required: 'Please confirm password',
                   })}
                   placeholder="••••••"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none pr-10"
@@ -238,7 +240,7 @@ const Register = () => {
               Address
             </label>
             <textarea
-              {...register("address", { required: "Address is required" })}
+              {...register('address', { required: 'Address is required' })}
               rows={2}
               placeholder="Your address"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none resize-none"
@@ -256,7 +258,7 @@ const Register = () => {
             className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-primary to-primary-hover text-white py-2.5 rounded-md shadow-lg hover:opacity-90 transition disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isSubmitting && <ImSpinner3 className="animate-spin text-white" />}
-            {isSubmitting ? "Registering..." : "Create Account"}
+            {isSubmitting ? 'Registering...' : 'Create Account'}
           </button>
         </form>
 
@@ -278,7 +280,7 @@ const Register = () => {
         </button>
 
         <p className="text-center mt-6 text-sm text-text-secondary">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link
             to="/login"
             className="text-primary font-medium hover:underline"

@@ -6,33 +6,30 @@ import { useAuth } from '@/hooks/useAuth';
 import { ImSpinner3 } from 'react-icons/im';
 import { PlusCircle, Trash2, Eye, EyeOff } from 'lucide-react';
 import { auth } from '@/lib/firebase';
+import {
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from 'firebase/auth';
 
 const AdminProfile = () => {
-  const { dbUser, loading: authLoading, refetchUser } = useAuth();
+  const { dbUser, loading: authLoading, refetchDbUser } = useAuth();
+  const [isUpdating, setIsUpdating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const isEmailPasswordUser = auth.currentUser?.providerData.some(
     provider => provider.providerId === 'password'
   );
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm({
+  const { register, handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: {
       name: '',
       email: '',
       photoURL: '',
       addresses: [],
+      currentPassword: '',
       newPassword: '',
-      confirmPassword: '',
     },
   });
 
@@ -40,7 +37,6 @@ const AdminProfile = () => {
     control,
     name: 'addresses',
   });
-
   const photoURL = watch('photoURL');
 
   useEffect(() => {
@@ -52,6 +48,8 @@ const AdminProfile = () => {
         addresses: dbUser.addresses?.length
           ? dbUser.addresses
           : [{ label: 'Primary', details: '' }],
+        currentPassword: '',
+        newPassword: '',
       });
     }
   }, [dbUser, reset]);
@@ -59,7 +57,6 @@ const AdminProfile = () => {
   const handleImageUpload = async e => {
     const file = e.target.files[0];
     if (!file) return;
-
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -67,15 +64,10 @@ const AdminProfile = () => {
       'upload_preset',
       import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
     );
-
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: formData,
-      });
+      const res = await fetch(url, { method: 'POST', body: formData });
       const data = await res.json();
       if (data.secure_url) {
         setValue('photoURL', data.secure_url, { shouldDirty: true });
@@ -84,60 +76,62 @@ const AdminProfile = () => {
         throw new Error(data.error?.message || 'Cloudinary upload failed');
       }
     } catch (error) {
-      console.error('Cloudinary upload failed:', error);
-      toast.error('Image upload failed. Please try again.');
+      toast.error(error.message || 'Image upload failed.');
     } finally {
       setIsUploading(false);
     }
   };
 
   const onSubmit = async data => {
-    const profileUpdatePromise = api.patch('/auth/me', {
-      name: data.name,
-      photoURL: data.photoURL,
-      addresses: data.addresses,
-    });
-
-    toast.promise(profileUpdatePromise, {
-      loading: 'Updating profile...',
-      success: 'Profile updated!',
-      error: 'Failed to update profile.',
-    });
-
-    let passwordUpdatePromise = Promise.resolve();
-
-    if (isEmailPasswordUser && data.newPassword) {
-      if (data.newPassword !== data.confirmPassword) {
-        return toast.error('New passwords do not match.');
-      }
-      passwordUpdatePromise = api.patch('/auth/me/change-password', {
-        newPassword: data.newPassword,
-        confirmPassword: data.confirmPassword,
-      });
-      toast.promise(passwordUpdatePromise, {
-        loading: 'Updating password...',
-        success: 'Password updated!',
-        error: 'Failed to update password.',
-      });
-    }
-
+    setIsUpdating(true);
     try {
-      await Promise.all([profileUpdatePromise, passwordUpdatePromise]);
-      refetchUser();
+      await api.patch('/auth/me', {
+        name: data.name,
+        photoURL: data.photoURL,
+        addresses: data.addresses,
+      });
+      toast.success('Profile details updated!');
+      refetchDbUser();
+
+      if (isEmailPasswordUser && data.newPassword) {
+        if (!data.currentPassword) {
+          toast.error('Please enter your current password to set a new one.');
+          setIsUpdating(false);
+          return;
+        }
+
+        const user = auth.currentUser;
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          data.currentPassword
+        );
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, data.newPassword);
+        toast.success('Password changed successfully!');
+        reset({ ...data, currentPassword: '', newPassword: '' });
+      }
     } catch (error) {
-      console.error('Update failed', error);
+      if (error.code === 'auth/wrong-password') {
+        toast.error('Incorrect current password.');
+      } else if (error.code) {
+        toast.error(
+          error.message || 'Failed to change password. Please try again.'
+        );
+      } else {
+        console.error('An error occurred during profile update:', error);
+      }
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  if (authLoading) {
+  if (authLoading)
     return <div className="text-center p-20">Loading profile...</div>;
-  }
 
   return (
     <div className="pt-24 pb-12 bg-gray-50">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-100">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Profile Image */}
           <div className="flex items-center gap-6">
@@ -176,29 +170,21 @@ const AdminProfile = () => {
             </div>
           </div>
 
-          {/* Basic Info Section */}
+          {/* Basic Info */}
           <div className="p-4 border rounded-lg bg-gray-50">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
               Basic Info
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Full Name
                 </label>
                 <input
-                  {...register('name', { required: 'Name is required' })}
+                  {...register('name')}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                 />
-                {errors.name && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.name.message}
-                  </p>
-                )}
               </div>
-
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Email
@@ -212,14 +198,24 @@ const AdminProfile = () => {
             </div>
           </div>
 
-          {/* Security Section */}
+          {/* Security */}
           {isEmailPasswordUser && (
             <div className="p-4 border rounded-lg bg-gray-50">
               <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                Security
+                Change Password
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* New Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    {...register('currentPassword')}
+                    placeholder="Enter current password"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+                  />
+                </div>
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-600 mb-1">
                     New Password
@@ -238,38 +234,14 @@ const AdminProfile = () => {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-
-                {/* Confirm Password */}
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Confirm Password
-                  </label>
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    {...register('confirmPassword')}
-                    placeholder="Confirm new password"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-9 text-gray-400"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
           )}
 
-          {/* Address Section */}
+          {/* Addresses */}
           <div className="p-4 border rounded-lg bg-gray-50">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Address
+              Addresses
             </h3>
             <div className="space-y-3">
               {fields.map((field, index) => (
@@ -312,10 +284,11 @@ const AdminProfile = () => {
           <div className="pt-4 text-right">
             <button
               type="submit"
-              disabled={isSubmitting || isUploading}
+              disabled={isUpdating || isUploading}
               className="w-full md:w-auto flex justify-center items-center gap-2 bg-primary text-white py-2.5 px-6 rounded-md shadow hover:bg-primary-hover transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting && <ImSpinner3 className="animate-spin" />}
+              {isUpdating ||
+                (isUploading && <ImSpinner3 className="animate-spin" />)}
               Save Changes
             </button>
           </div>

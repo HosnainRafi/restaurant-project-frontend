@@ -178,15 +178,24 @@ const Navbar = ({ onCartClick }) => {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 />
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white/80 backdrop-blur-md rounded-xl shadow-2xl z-50 border border-gray-100">
+                  <div className="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl z-50 border border-gray-100">
                     {role === 'admin' || role === 'manager' ? (
-                      <NavLink
-                        to="/admin/dashboard/orders"
-                        className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        Admin Dashboard
-                      </NavLink>
+                      <>
+                        <NavLink
+                          to="/admin/dashboard/orders"
+                          className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Admin Dashboard
+                        </NavLink>
+                        <NavLink
+                          to="/admin/dashboard/profile"
+                          className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          Profile
+                        </NavLink>
+                      </>
                     ) : (
                       <>
                         <NavLink
