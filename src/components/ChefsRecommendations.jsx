@@ -15,7 +15,7 @@ const ChefsRecommendations = () => {
       });
 
       const data = res?.data?.data || [];
-      setMenuItems(data);
+          setMenuItems(data.slice(0, 4));
     } catch (e) {
       toast.error(e?.message || 'Failed to load recommendations.');
     } finally {

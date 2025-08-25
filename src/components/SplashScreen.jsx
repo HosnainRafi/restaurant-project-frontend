@@ -2,59 +2,61 @@
 import { motion } from 'framer-motion';
 
 const SplashScreen = () => {
-  const dotVariants = {
-    animate: {
-      scale: [0.8, 1.2, 0.8],
-      opacity: [0.3, 1, 0.3],
-      transition: {
-        duration: 0.9,
-        repeat: Infinity,
-        repeatType: 'loop',
-        ease: 'easeInOut',
-      },
-    },
-  };
-
   return (
     <motion.div
-      className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#8B1E3F]/80 to-[#FDEDEE] z-50 overflow-hidden"
+      className="fixed inset-0 flex flex-col items-center justify-center bg-[#8B1E3F] text-white z-50 overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 1 }}
+      transition={{ duration: 0.8 }}
     >
-      {/* Brand Text */}
+      {/* Animated Background Overlay */}
+      <motion.div
+        className="absolute inset-0 bg-[url('https://i.postimg.cc/h4TvMVmX/bannder-Image.jpg')] bg-cover bg-center"
+        initial={{ scale: 1.2, opacity: 0.5 }}
+        animate={{ scale: 1, opacity: 0.15 }}
+        transition={{ duration: 2, ease: 'easeOut' }}
+      />
+
+      {/* Brand Title */}
       <motion.h1
-        className="text-[#8B1E3F] text-5xl md:text-6xl font-extrabold tracking-wider drop-shadow-lg"
-        initial={{ scale: 0.6, opacity: 0, rotate: -5 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
+        className="text-6xl md:text-7xl font-extrabold tracking-widest relative z-10"
+        initial={{ scale: 1.4, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.4, ease: 'easeOut' }}
       >
         Urban Grill
       </motion.h1>
 
       {/* Tagline */}
       <motion.p
-        className="mt-4 text-white text-sm md:text-base opacity-80"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 1 }}
+        className="mt-4 text-lg md:text-xl font-light tracking-wide opacity-80 relative z-10"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.8, duration: 1 }}
       >
-        Experience the taste of perfection
+        Savor the Flavor • Crafted with Passion
       </motion.p>
 
-      {/* Continuous Loading Dots */}
-      <div className="flex space-x-2 mt-6">
-        {[0, 1, 2].map(i => (
-          <motion.span
-            key={i}
-            className="w-3 h-3 bg-white rounded-full shadow-lg"
-            variants={dotVariants}
-            animate="animate"
-            style={{ transitionDelay: `${i * 0.2}s` }}
-          />
-        ))}
-      </div>
+      {/* Loading Bar */}
+      <motion.div
+        className="mt-8 h-1 w-48 bg-white/20 rounded-full overflow-hidden relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+      >
+        <motion.div
+          className="h-1 bg-white rounded-full"
+          initial={{ x: '-100%' }}
+          animate={{ x: '100%' }}
+          transition={{
+            repeat: Infinity,
+            repeatType: 'loop',
+            duration: 1.6,
+            ease: 'easeInOut',
+          }}
+        />
+      </motion.div>
     </motion.div>
   );
 };
