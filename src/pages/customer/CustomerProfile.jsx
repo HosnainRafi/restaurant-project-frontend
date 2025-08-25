@@ -14,13 +14,12 @@ import {
 
 const CustomerProfile = () => {
   const { dbUser, loading: authLoading, refetchDbUser } = useAuth();
-  console.log(refetchDbUser);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const isEmailPasswordUser = auth.currentUser?.providerData.some(
-    provider => provider.providerId === 'password'
+    (provider) => provider.providerId === "password"
   );
 
   const {
@@ -33,9 +32,9 @@ const CustomerProfile = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      name: '',
-      email: '',
-      photoURL: '',
+      name: "",
+      email: "",
+      photoURL: "",
       addresses: [],
       currentPassword: "",
       newPassword: "",
@@ -44,16 +43,16 @@ const CustomerProfile = () => {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'addresses',
+    name: "addresses",
   });
   const photoURL = watch("photoURL");
 
   useEffect(() => {
     if (dbUser) {
       reset({
-        name: dbUser.name || '',
-        email: dbUser.email || '',
-        photoURL: dbUser.photoURL || '',
+        name: dbUser.name || "",
+        email: dbUser.email || "",
+        photoURL: dbUser.photoURL || "",
         addresses: dbUser.addresses?.length
           ? dbUser.addresses
           : [{ label: "Primary", details: "" }],
@@ -63,14 +62,14 @@ const CustomerProfile = () => {
     }
   }, [dbUser, reset]);
 
-  const handleImageUpload = async e => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
     formData.append(
-      'upload_preset',
+      "upload_preset",
       import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
     );
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -79,10 +78,10 @@ const CustomerProfile = () => {
       const res = await fetch(url, { method: "POST", body: formData });
       const data = await res.json();
       if (data.secure_url) {
-        setValue('photoURL', data.secure_url, { shouldDirty: true });
-        toast.success('Image uploaded!');
+        setValue("photoURL", data.secure_url, { shouldDirty: true });
+        toast.success("Image uploaded!");
       } else {
-        throw new Error(data.error?.message || 'Cloudinary upload failed');
+        throw new Error(data.error?.message || "Cloudinary upload failed");
       }
     } catch (error) {
       toast.error("Image upload failed.");
@@ -145,34 +144,32 @@ const CustomerProfile = () => {
   if (authLoading) return <div className="text-center p-20">Loading...</div>;
 
   return (
-    <div className="pt-24 pb-12 bg-gray-50">
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-100">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
-
+    <div className="pt-28 pb-12 bg-gray-50">
+      <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+        <h1 className="text-3xl font-bold text-primary mb-6">My Profile</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Profile Image */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center space-x-6">
             <div className="relative">
               <img
                 src={
                   photoURL ||
-                  'https://res.cloudinary.com/du8e3wgew/image/upload/v1756087795/dx47mzwd8xxtxacrbd3h.png'
+                  "https://res.cloudinary.com/du8e3wgew/image/upload/v1756087795/dx47mzwd8xxtxacrbd3h.png"
                 }
                 alt="Profile"
-                className="w-20 h-20 rounded-full object-cover border border-gray-300"
+                className="w-24 h-24 rounded-full object-cover border-4 border-primary"
               />
               {isUploading && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
-                  <ImSpinner3 className="animate-spin text-white text-lg" />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                  <ImSpinner3 className="animate-spin text-white text-2xl" />
                 </div>
               )}
             </div>
             <div>
               <label
                 htmlFor="photo-upload"
-                className="cursor-pointer bg-primary text-white px-3 py-1.5 rounded-md text-sm hover:bg-primary-hover transition"
+                className="cursor-pointer bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-hover transition"
               >
-                Upload Picture
+                Upload New Picture
               </label>
               <input
                 id="photo-upload"
@@ -181,7 +178,7 @@ const CustomerProfile = () => {
                 className="hidden"
                 onChange={handleImageUpload}
               />
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 mt-2">
                 PNG, JPG, GIF up to 10MB.
               </p>
             </div>
@@ -194,25 +191,21 @@ const CustomerProfile = () => {
             <input {...register("name")} className="form-input" />
           </div>
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Email
-                </label>
-                <input
-                  {...register('email')}
-                  disabled
-                  className="w-full border border-gray-200 bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-500"
-                />
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1">
+              Email
+            </label>
+            <input
+              {...register("email")}
+              disabled
+              className="form-input bg-gray-100"
+            />
           </div>
 
-          {/* Security Section */}
           {isEmailPasswordUser && (
-            <div className="p-4 border rounded-lg bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                Security
+            <div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2 border-t pt-4">
+                Change Password
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -227,7 +220,7 @@ const CustomerProfile = () => {
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
                     New Password
                   </label>
                   <input
@@ -239,7 +232,7 @@ const CustomerProfile = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-9 text-gray-400"
+                    className="absolute right-3 top-9 text-gray-500"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -248,50 +241,48 @@ const CustomerProfile = () => {
             </div>
           )}
 
-          {/* Address Section */}
-          <div className="p-4 border rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Address
+          <div>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">
+              My Addresses
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="flex items-start gap-3 p-3 border border-gray-200 rounded-md bg-white"
+                  className="flex items-start gap-4 p-4 border rounded-md"
                 >
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input
                       {...register(`addresses.${index}.label`)}
                       placeholder="Label (e.g., Home)"
-                      className="col-span-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+                      className="form-input md:col-span-1"
                     />
                     <input
                       {...register(`addresses.${index}.details`)}
-                      placeholder="Full Address"
-                      className="col-span-2 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+                      placeholder="Full Address Details"
+                      className="form-input md:col-span-2"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    className="p-2 text-red-500 hover:text-red-600"
+                    className="p-2 text-red-500 hover:text-red-700"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={20} />
                   </button>
                 </div>
               ))}
               <button
                 type="button"
-                onClick={() => append({ label: '', details: '' })}
-                className="flex items-center gap-2 text-sm text-primary font-medium hover:underline"
+                onClick={() => append({ label: "", details: "" })}
+                className="flex items-center gap-2 text-primary font-medium hover:underline"
               >
-                <PlusCircle size={16} /> Add New Address
+                <PlusCircle size={18} /> Add New Address
               </button>
             </div>
           </div>
 
-          {/* Save Button */}
-          <div className="pt-4 text-right">
+          <div className="text-right">
             <button
               type="submit"
               disabled={isUpdating || isUploading}
