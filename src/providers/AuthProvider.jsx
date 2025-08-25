@@ -9,24 +9,36 @@ export const AuthProvider = ({ children }) => {
   const [dbUser, setDbUser] = useState(null); // Your database user profile
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchDbUser = async () => {
+    // Prevent fetching if there's no logged-in user
+    if (!auth.currentUser) {
+      setDbUser(null);
+      return;
+    }
+
+    try {
+      // The api interceptor automatically adds the token
+      const response = await api.get("/auth/me");
+      setDbUser(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch user profile from DB:", error);
+      setDbUser(null); // Clear profile on error
+    }
+  };
+
+  // This is the function that will be exposed to other components
+  const refetchDbUser = () => {
+    fetchDbUser();
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setIsLoading(true);
-      if (firebaseUser) {
-        // User is signed in with Firebase
-        setUser(firebaseUser);
+      setUser(firebaseUser);
 
-        try {
-          // Fetch the user's profile from your backend
-          const response = await api.get("/auth/me");
-          setDbUser(response.data.data);
-        } catch (error) {
-          console.error("Failed to fetch user profile from DB:", error);
-          setDbUser(null); // Clear profile on error
-        }
+      if (firebaseUser) {
+        await fetchDbUser();
       } else {
-        // User is signed out
-        setUser(null);
         setDbUser(null);
       }
       setIsLoading(false);
@@ -40,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     user, // Firebase auth object
     dbUser, // Your database user profile (contains role)
     isLoading,
+    refetchDbUser,
   };
 
   return (

@@ -1,29 +1,34 @@
-import { auth } from '../lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { ImSpinner3 } from 'react-icons/im';
-import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import { auth } from "../lib/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
+import { ImSpinner3 } from "react-icons/im";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const handleLogin = async e => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
-      toast.success('Logged in successfully!');
-      const from = location.state?.from?.pathname || '/';
+      toast.success("Logged in successfully!");
+      const from = location.state?.from?.pathname || "/";
       navigate(from, { replace: true });
     } catch (error) {
       toast.error(error.message);
-      console.error('Error logging in:', error);
+      console.error("Error logging in:", error);
+      if (error.code === "auth/invalid-credential") {
+        toast.error("Incorrect email or password. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -50,7 +55,7 @@ const LoginPage = () => {
             <input
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               className="w-full px-4 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition shadow-sm"
               required
@@ -62,9 +67,9 @@ const LoginPage = () => {
               Password
             </label>
             <input
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
               className="w-full px-4 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition shadow-sm pr-10"
               required
@@ -87,12 +92,12 @@ const LoginPage = () => {
             disabled={loading}
             className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white py-2.5 rounded-md font-semibold text-sm shadow-lg transition ${
               loading
-                ? 'opacity-70 cursor-not-allowed'
-                : 'hover:from-primary/90 hover:to-secondary/90'
+                ? "opacity-70 cursor-not-allowed"
+                : "hover:from-primary/90 hover:to-secondary/90"
             }`}
           >
             {loading && <ImSpinner3 className="animate-spin text-white" />}
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
 
           <div className="text-center mt-3">
@@ -107,7 +112,7 @@ const LoginPage = () => {
           {/* Register redirect using Link */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
-              Don’t have an account?{' '}
+              Don’t have an account?{" "}
               <Link
                 to="/register"
                 className="text-primary font-medium hover:underline"

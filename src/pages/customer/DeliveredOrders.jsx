@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { FaBoxOpen, FaCalendarAlt, FaStar, FaRegStar } from 'react-icons/fa';
-import api from '@/lib/api';
+import { useEffect, useState } from "react";
+import { FaBoxOpen, FaCalendarAlt, FaStar, FaRegStar } from "react-icons/fa";
+import api from "@/lib/api";
 
 const DeliveredOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -11,13 +11,13 @@ const DeliveredOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await api.get('/auth/me/orders');
+        const response = await api.get("/auth/me/orders");
         const delivered = response.data.data.filter(
-          order => order.status === 'completed'
+          (order) => order.status === "completed"
         );
         setOrders(delivered);
       } catch (error) {
-        console.error('Failed to load orders:', error);
+        console.error("Failed to load orders:", error);
       } finally {
         setLoading(false);
       }
@@ -26,26 +26,26 @@ const DeliveredOrders = () => {
   }, []);
 
   const handleReviewChange = (id, text) => {
-    setReviews(prev => ({ ...prev, [id]: { ...prev[id], text } }));
-    setErrors(prev => ({ ...prev, [id]: { ...prev[id], text: '' } }));
+    setReviews((prev) => ({ ...prev, [id]: { ...prev[id], text } }));
+    setErrors((prev) => ({ ...prev, [id]: { ...prev[id], text: "" } }));
   };
 
   const handleRatingChange = (id, rating) => {
-    setReviews(prev => ({ ...prev, [id]: { ...prev[id], rating } }));
-    setErrors(prev => ({ ...prev, [id]: { ...prev[id], rating: '' } }));
+    setReviews((prev) => ({ ...prev, [id]: { ...prev[id], rating } }));
+    setErrors((prev) => ({ ...prev, [id]: { ...prev[id], rating: "" } }));
   };
 
-  const submitReview = id => {
+  const submitReview = (id) => {
     const review = reviews[id] || {};
     let error = {};
-    if (!review.text) error.text = 'Review cannot be empty';
-    if (!review.rating) error.rating = 'Please select a rating';
-    setErrors(prev => ({ ...prev, [id]: error }));
+    if (!review.text) error.text = "Review cannot be empty";
+    if (!review.rating) error.rating = "Please select a rating";
+    setErrors((prev) => ({ ...prev, [id]: error }));
     if (Object.keys(error).length > 0) return;
 
     // Simulate API call will be here
-    console.log('Review submitted:', { id, review });
-    setReviews(prev => ({ ...prev, [id]: {} }));
+    console.log("Review submitted:", { id, review });
+    setReviews((prev) => ({ ...prev, [id]: {} }));
   };
 
   if (loading)
@@ -67,7 +67,7 @@ const DeliveredOrders = () => {
         Delivered Orders
       </h1>
       <div className="space-y-6">
-        {orders.map(order => (
+        {orders.map((order) => (
           <div
             key={order._id}
             className="bg-white shadow-md rounded-xl p-5 hover:shadow-lg transition-all"
@@ -112,7 +112,7 @@ const DeliveredOrders = () => {
             {/* Review Section */}
             <div className="border-t pt-3 mt-2">
               <div className="flex gap-1 mb-2">
-                {[1, 2, 3, 4, 5].map(star => {
+                {[1, 2, 3, 4, 5].map((star) => {
                   const currentRating = reviews[order._id]?.rating || 0;
                   return currentRating >= star ? (
                     <FaStar
@@ -137,10 +137,10 @@ const DeliveredOrders = () => {
 
               <textarea
                 placeholder="Write your review..."
-                value={reviews[order._id]?.text || ''}
-                onChange={e => handleReviewChange(order._id, e.target.value)}
+                value={reviews[order._id]?.text || ""}
+                onChange={(e) => handleReviewChange(order._id, e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#8B1E3F] outline-none mb-1 ${
-                  errors[order._id]?.text ? 'border-red-500' : 'border-gray-300'
+                  errors[order._id]?.text ? "border-red-500" : "border-gray-300"
                 }`}
                 rows={2}
               />
