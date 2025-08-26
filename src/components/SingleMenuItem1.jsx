@@ -26,11 +26,11 @@ const SingleMenuItem1 = ({ item }) => {
 
       {/* Content overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-        <h3 className="text-lg font-semibold">{item.name}</h3>
-        <p className="text-sm text-gray-200 line-clamp-2">{item.description}</p>
+        <h3 className="text-base font-medium">{item.name}</h3>
+        <p className="text-xs text-gray-200 line-clamp-2 truncate" title={item.description} >{item.description}</p>
 
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-lg font-bold text-primary-light">
+        <div className="mt-1 flex items-center justify-between">
+          <span className="text-xl font-bold text-primary-light">
             ${formattedPrice}
           </span>
           <button
