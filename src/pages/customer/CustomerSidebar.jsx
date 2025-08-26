@@ -64,19 +64,6 @@ const CustomerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
             Home
           </NavLink>
           <NavLink
-            to="/customer/dashboard"
-            end
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 text-sm font-medium ${
-                isActive ? activeLinkClass : inactiveLinkClass
-              }`
-            }
-            onClick={() => setSidebarOpen(false)}
-          >
-            <MdDashboard className="text-lg" />
-            Dashboard
-          </NavLink>
-          <NavLink
             to="/customer/dashboard/reservations"
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 text-sm font-medium ${
