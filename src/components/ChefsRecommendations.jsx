@@ -79,7 +79,7 @@ const ChefsRecommendations = () => {
 
         {/* Items */}
         {!loading && menuItems.length > 0 && (
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             {menuItems.map(item => (
               <SingleMenuItem key={item._id} item={item} />
             ))}

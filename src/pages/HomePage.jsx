@@ -12,7 +12,7 @@ const HomePage = () => {
   return (
     <div>
       <HeroSection />
-      <AboutSection />
+      {/* <AboutSection /> */}
       <FeaturedCategory />
       <FeaturedDishes />
       <TodaysMenu />
