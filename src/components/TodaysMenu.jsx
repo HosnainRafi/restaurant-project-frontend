@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import SingleMenuItem from './SingleMenuItem';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import SingleMenuItem1 from './SingleMenuItem1';
 
 const TodaysMenu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -59,7 +59,7 @@ const TodaysMenu = () => {
         {!loading && menuItems.length > 0 && (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {menuItems.map(item => (
-              <SingleMenuItem key={item._id} item={item} />
+              <SingleMenuItem1 key={item._id} item={item} />
             ))}
           </div>
         )}
