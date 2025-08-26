@@ -3,6 +3,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SingleMenuItem from './SingleMenuItem';
 import toast from 'react-hot-toast';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/autoplay';
+import { EffectCoverflow, Autoplay } from 'swiper/modules';
 
 const FeaturedDishes = () => {
   const [items, setItems] = useState([]);
@@ -70,13 +75,34 @@ const FeaturedDishes = () => {
           </div>
         )}
 
-        {/* Items */}
+        {/* Carousel */}
         {!loading && items.length > 0 && (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <Swiper
+            effect={'coverflow'}
+            grabCursor={true}
+            centeredSlides={true}
+            slidesPerView={'auto'}
+            loop={true}
+            autoplay={{
+              delay: 3500,
+              disableOnInteraction: false,
+            }}
+            coverflowEffect={{
+              rotate: 0,
+              stretch: 0,
+              depth: 200,
+              modifier: 3,
+              slideShadows: false,
+            }}
+            modules={[EffectCoverflow, Autoplay]}
+            className="featured-swiper"
+          >
             {items.map(item => (
-              <SingleMenuItem key={item._id} item={item} />
+              <SwiperSlide key={item._id} className="max-w-sm">
+                <SingleMenuItem item={item} />
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         )}
       </div>
     </section>

@@ -57,7 +57,7 @@ const TodaysMenu = () => {
 
         {/* Specials Grid */}
         {!loading && menuItems.length > 0 && (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {menuItems.map(item => (
               <SingleMenuItem key={item._id} item={item} />
             ))}

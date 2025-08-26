@@ -6,41 +6,41 @@ const SingleMenuItem = ({ item }) => {
   const formattedPrice = (item.price / 100).toFixed(2);
   const { addItem } = useCart();
   const { HandleCardPanelOpen } = useOutletContext();
+
   const handleAddToCart = () => {
     addItem(item);
     HandleCardPanelOpen();
   };
+
   return (
-    <div className="group grid grid-cols-12 rounded-xl shadow-lg overflow-hidden transition hover:shadow-2xl">
-      {/* Content */}
-      <div className="col-span-9 px-6 py-4 flex flex-col justify-between bg-white">
-        <div>
-          <h3 className="text-xl font-semibold text-foreground">{item.name}</h3>
-          <p className="mt-2 text-text-secondary">{item.description}</p>
-        </div>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-primary">
-            $ {formattedPrice}
+    <div className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300">
+      {/* Image */}
+      <img
+        src={item.imageUrl || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
+        alt={item.name}
+        className="w-full h-56 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+      />
+
+      {/* Gradient shadow bottom */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent"></div>
+
+      {/* Content overlay */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+        <h3 className="text-lg font-semibold">{item.name}</h3>
+        <p className="text-sm text-gray-200 line-clamp-2">{item.description}</p>
+
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-lg font-bold text-primary-light">
+            ${formattedPrice}
           </span>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => handleAddToCart(item.id)}
-              className="ml-2 flex items-center gap-1 bg-primary text-white px-2 py-1.5 rounded-[3px] text-xs hover:bg-primary-hover transition"
-            >
-              <FaCartPlus size={12} />
-              Add to Cart
-            </button>
-          </div>
+          <button
+            onClick={handleAddToCart}
+            className="ml-2 flex items-center gap-1 bg-primary px-2 py-1.5 rounded text-xs font-medium hover:bg-primary-hover transition"
+          >
+            <FaCartPlus size={14} />
+            Add to Cart
+          </button>
         </div>
-      </div>
-
-      <div className="col-span-3 overflow-hidden">
-        <img
-          src={item.imageUrl || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
-          alt={item.name}
-          className="w-full h-36 object-center object-cover transition-transform duration-500 ease-in-out group-hover:scale-110 hover:animate-spin"
-        />
       </div>
     </div>
   );
