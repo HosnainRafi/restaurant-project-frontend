@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { FaBolt, FaEdit, FaStar, FaTrash, FaUtensils } from 'react-icons/fa';
-import toast from 'react-hot-toast';
-import Modal from '@/components/Modal';
-import api from '@/lib/api';
-import EditItemModal from '../Modal/EditItemModal';
-import ConfirmDeleteModal from '../Modal/ConfirmDeleteModal';
-import AddMenuItemModal from '../Modal/AddMenuItemModal';
+import { useEffect, useState } from "react";
+import { FaBolt, FaEdit, FaStar, FaTrash, FaUtensils } from "react-icons/fa";
+import toast from "react-hot-toast";
+import Modal from "@/components/Modal";
+import api from "@/lib/api";
+import EditItemModal from "../Modal/EditItemModal";
+import ConfirmDeleteModal from "../Modal/ConfirmDeleteModal";
+import AddMenuItemModal from "../Modal/AddMenuItemModal";
 
 const MenuManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -17,19 +17,19 @@ const MenuManagement = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-  const [refresh,setRefresh] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
       const [itemsRes, categoriesRes] = await Promise.all([
-        api.get('/menu-items'),
-        api.get('/menu-categories'),
+        api.get("/menu-items"),
+        api.get("/menu-categories"),
       ]);
       setMenuItems(itemsRes.data.data || []);
       setCategories(categoriesRes.data.data || []);
     } catch (error) {
-      toast.error(error?.message || 'Failed to fetch menu data.');
+      toast.error(error?.message || "Failed to fetch menu data.");
     } finally {
       setIsLoading(false);
     }
@@ -42,49 +42,51 @@ const MenuManagement = () => {
     setRefresh(!refresh);
   };
 
-  const handleEditClick = item => {
+  const handleEditClick = (item) => {
     setSelectedItem(item);
     setIsEditModalOpen(true);
   };
 
-  const handleEditSubmit = async data => {
+  const handleEditSubmit = async (data) => {
     if (!selectedItem) return;
     const promise = api.patch(`/menu-items/${selectedItem._id}`, data);
     toast.promise(promise, {
-      loading: 'Updating item...',
-      success: 'Item updated successfully!',
-      error: 'Failed to update item.',
+      loading: "Updating item...",
+      success: "Item updated successfully!",
+      error: "Failed to update item.",
     });
     try {
       const response = await promise;
-      setMenuItems(prev =>
-        prev.map(item =>
+      setMenuItems((prev) =>
+        prev.map((item) =>
           item._id === selectedItem._id ? response.data.data : item
         )
       );
       setIsEditModalOpen(false);
       setSelectedItem(null);
     } catch {
-      toast.error('Failed to update item.');
+      toast.error("Failed to update item.");
     }
   };
 
   const toggleFlag = async (id, field, value) => {
     const promise = api.patch(`/menu-items/${id}`, { [field]: value });
     toast.promise(promise, {
-      loading: 'Updating...',
-      success: 'Updated!',
-      error: 'Failed to update.',
+      loading: "Updating...",
+      success: "Updated!",
+      error: "Failed to update.",
     });
     try {
       const res = await promise;
-      setMenuItems(prev => prev.map(i => (i._id === id ? res.data.data : i)));
+      setMenuItems((prev) =>
+        prev.map((i) => (i._id === id ? res.data.data : i))
+      );
     } catch {
-      toast.error('Failed to update item.');
+      toast.error("Failed to update item.");
     }
   };
 
-  const handleDeleteClick = item => {
+  const handleDeleteClick = (item) => {
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
@@ -93,26 +95,26 @@ const MenuManagement = () => {
     if (!itemToDelete) return;
     const promise = api.delete(`/menu-items/${itemToDelete._id}`);
     toast.promise(promise, {
-      loading: 'Deleting item...',
-      success: 'Item deleted successfully!',
-      error: 'Failed to delete item.',
+      loading: "Deleting item...",
+      success: "Item deleted successfully!",
+      error: "Failed to delete item.",
     });
     try {
       await promise;
-      setMenuItems(prev => prev.filter(i => i._id !== itemToDelete._id));
+      setMenuItems((prev) => prev.filter((i) => i._id !== itemToDelete._id));
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
     } catch {
-      toast.error('Failed to delete item.');
+      toast.error("Failed to delete item.");
     }
   };
 
-  const getCategoryName = categoryId => {
-    if (!categoryId) return 'N/A';
-    if (typeof categoryId === 'object' && categoryId?.name)
+  const getCategoryName = (categoryId) => {
+    if (!categoryId) return "N/A";
+    if (typeof categoryId === "object" && categoryId?.name)
       return categoryId.name;
-    const category = categories.find(cat => cat._id === categoryId);
-    return category ? category.name : 'N/A';
+    const category = categories.find((cat) => cat._id === categoryId);
+    return category ? category.name : "N/A";
   };
 
   return (
@@ -172,7 +174,7 @@ const MenuManagement = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {menuItems.map(item => (
+                {menuItems.map((item) => (
                   <tr key={item._id} className="hover:bg-primary/5 transition">
                     <td className="px-4 py-3 text-gray-800 font-medium">
                       {item.name}
@@ -187,11 +189,11 @@ const MenuManagement = () => {
                       <span
                         className={`px-2 py-1 text-xs rounded-full font-semibold ${
                           item.isAvailable
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-200 text-gray-800'
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-200 text-gray-800"
                         }`}
                       >
-                        {item.isAvailable ? 'Yes' : 'No'}
+                        {item.isAvailable ? "Yes" : "No"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -222,10 +224,10 @@ const MenuManagement = () => {
                           <input
                             type="checkbox"
                             checked={!!item.isFeatured}
-                            onChange={e =>
+                            onChange={(e) =>
                               toggleFlag(
                                 item._id,
-                                'isFeatured',
+                                "isFeatured",
                                 e.target.checked
                               )
                             }
@@ -236,10 +238,10 @@ const MenuManagement = () => {
                           <input
                             type="checkbox"
                             checked={!!item.isChefsRecommendation}
-                            onChange={e =>
+                            onChange={(e) =>
                               toggleFlag(
                                 item._id,
-                                'isChefsRecommendation',
+                                "isChefsRecommendation",
                                 e.target.checked
                               )
                             }
@@ -250,10 +252,10 @@ const MenuManagement = () => {
                           <input
                             type="checkbox"
                             checked={!!item.isTodaysSpecial}
-                            onChange={e =>
+                            onChange={(e) =>
                               toggleFlag(
                                 item._id,
-                                'isTodaysSpecial',
+                                "isTodaysSpecial",
                                 e.target.checked
                               )
                             }
