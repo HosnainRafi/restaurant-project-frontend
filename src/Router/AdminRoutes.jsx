@@ -1,23 +1,32 @@
-import AdminLayout from "@/Layout/AdminLayout";
-import ReservationsDashboard from "@/pages/admin/ReservationsDashboard";
-import OrdersDashboard from "@/pages/admin/OrdersDashboard";
-import MenuManagement from "@/pages/admin/MenuManagement";
-import ManageUsers from "@/pages/admin/ManageUsers";
-import AdminProtectedRoute from "@/components/AdminProtectedRoute";
-import ErrorPage from "@/pages/Error/Error";
-import ManageChefs from "@/pages/admin/ManageChefs";
-import ManageFoodCategories from "@/pages/admin/ManageFoodCategories";
-import AdminProfile from "@/pages/admin/AdminProfile";
-import ReviewManagement from "@/pages/admin/ReviewManagement";
+import AdminLayout from '@/Layout/AdminLayout';
+import ReservationsDashboard from '@/pages/admin/ReservationsDashboard';
+import OrdersDashboard from '@/pages/admin/OrdersDashboard';
+import MenuManagement from '@/pages/admin/MenuManagement';
+import ManageUsers from '@/pages/admin/ManageUsers';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
+import ErrorPage from '@/pages/Error/Error';
+import ManageChefs from '@/pages/admin/ManageChefs';
+import ManageFoodCategories from '@/pages/admin/ManageFoodCategories';
+import AdminProfile from '@/pages/admin/AdminProfile';
+import ReviewManagement from '@/pages/admin/ReviewManagement';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
 
 export const AdminRoutes = [
   {
-    path: "/admin/dashboard",
+    path: '/admin/dashboard',
     element: <AdminLayout />,
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "",
+        path: '',
+        element: (
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>
+        ),
+      },
+      {
+        path: 'reservations',
         element: (
           <AdminProtectedRoute>
             <ReservationsDashboard />
@@ -25,15 +34,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "reservations",
-        element: (
-          <AdminProtectedRoute>
-            <ReservationsDashboard />
-          </AdminProtectedRoute>
-        ),
-      },
-      {
-        path: "orders",
+        path: 'orders',
         element: (
           <AdminProtectedRoute>
             <OrdersDashboard />
@@ -41,7 +42,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "menu-management",
+        path: 'menu-management',
         element: (
           <AdminProtectedRoute>
             <MenuManagement />
@@ -49,7 +50,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "manage-chefs",
+        path: 'manage-chefs',
         element: (
           <AdminProtectedRoute>
             <ManageChefs />
@@ -57,7 +58,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "manage-food-categories",
+        path: 'manage-food-categories',
         element: (
           <AdminProtectedRoute>
             <ManageFoodCategories />
@@ -65,7 +66,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "manage-users",
+        path: 'manage-users',
         element: (
           <AdminProtectedRoute>
             <ManageUsers />
@@ -73,7 +74,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "review-management",
+        path: 'review-management',
         element: (
           <AdminProtectedRoute>
             <ReviewManagement />
@@ -81,7 +82,7 @@ export const AdminRoutes = [
         ),
       },
       {
-        path: "profile",
+        path: 'profile',
         element: (
           <AdminProtectedRoute>
             <AdminProfile />

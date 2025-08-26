@@ -7,6 +7,7 @@ import PaymentPage from '@/pages/PaymentPage';
 import CustomerProtectedRoute from '@/components/CustomerProtectedRoute';
 import ErrorPage from '@/pages/Error/Error';
 import DeliveredOrders from '@/pages/customer/DeliveredOrders';
+import CustomerDashboard from '@/pages/customer/CustomerDashboard';
 
 export const CustomerRoutes = [
   {
@@ -18,7 +19,7 @@ export const CustomerRoutes = [
         path: '',
         element: (
           <CustomerProtectedRoute>
-            <MyOrdersPage />
+            <CustomerDashboard/>
           </CustomerProtectedRoute>
         ),
       },

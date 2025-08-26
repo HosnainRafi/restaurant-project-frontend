@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { MdDashboard } from 'react-icons/md';
 
 const CustomerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const activeLinkClass = 'bg-primary text-white shadow-md rounded-xl';
@@ -62,7 +63,19 @@ const CustomerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
             <FaHome className="text-lg" />
             Home
           </NavLink>
-
+          <NavLink
+            to="/customer/dashboard"
+            end
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 text-sm font-medium ${
+                isActive ? activeLinkClass : inactiveLinkClass
+              }`
+            }
+            onClick={() => setSidebarOpen(false)}
+          >
+            <MdDashboard className="text-lg" />
+            Dashboard
+          </NavLink>
           <NavLink
             to="/customer/dashboard/reservations"
             className={({ isActive }) =>
