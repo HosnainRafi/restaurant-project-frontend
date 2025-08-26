@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink } from "react-router-dom";
 import {
   FaUtensils,
   FaClipboardList,
@@ -8,16 +8,16 @@ import {
   FaPlusCircle,
   FaUsers,
   FaUser,
-} from 'react-icons/fa';
-import { PiChefHatFill } from 'react-icons/pi';
-import { MdCategory } from 'react-icons/md';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+} from "react-icons/fa";
+import { PiChefHatFill } from "react-icons/pi";
+import { MdCategory } from "react-icons/md";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const AdminSidebar = () => {
-  const activeLinkClass = 'bg-primary text-white rounded-lg shadow-md';
+  const activeLinkClass = "bg-primary text-white rounded-lg shadow-md";
   const inactiveLinkClass =
-    'text-text-secondary hover:bg-primary/10 hover:text-primary rounded-lg';
+    "text-text-secondary hover:bg-primary/10 hover:text-primary rounded-lg";
 
   return (
     <aside className="w-64 bg-white shadow-xl flex flex-col h-screen overflow-y-auto">
@@ -102,6 +102,18 @@ const AdminSidebar = () => {
         >
           <MdCategory className="text-lg" />
           Manage Food Categories
+        </NavLink>
+
+        <NavLink
+          to="/admin/dashboard/review-management"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+              isActive ? activeLinkClass : inactiveLinkClass
+            }`
+          }
+        >
+          <FaUtensils className="text-lg" />
+          Review Management
         </NavLink>
 
         <NavLink

@@ -1,82 +1,86 @@
-import { Star } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import { Pagination, Autoplay } from 'swiper/modules';
-import { useEffect, useState } from 'react';
-import api from '@/lib/api';
+import { Star } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination, Autoplay } from "swiper/modules";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
-// const testimonials = [
-//   {
-//     id: 1,
-//     name: 'Sophia Martinez',
-//     role: 'Food Blogger',
-//     image: 'https://i.pravatar.cc/100?img=1',
-//     review:
-//       'Absolutely loved the Grilled Salmon! The flavors were perfectly balanced, and the atmosphere was so cozy.',
-//     rating: 5,
-//   },
-//   {
-//     id: 2,
-//     name: 'Liam Johnson',
-//     role: 'Local Guide',
-//     image: 'https://i.pravatar.cc/100?img=2',
-//     review:
-//       'The steak was juicy and cooked to perfection. Definitely one of the best dining experiences I’ve had in town.',
-//     rating: 4,
-//   },
-//   {
-//     id: 3,
-//     name: 'Emily Davis',
-//     role: 'Traveler',
-//     image: 'https://i.pravatar.cc/100?img=3',
-//     review:
-//       'A hidden gem! The pasta was so delicious and creamy, I can’t wait to come back with my friends.',
-//     rating: 5,
-//   },
-//   {
-//     id: 4,
-//     name: 'Daniel Carter',
-//     role: 'Photographer',
-//     image: 'https://i.pravatar.cc/100?img=4',
-//     review:
-//       'The desserts were heavenly! Perfect spot to relax after a long day.',
-//     rating: 5,
-//   },
-//   {
-//     id: 5,
-//     name: 'Olivia Brown',
-//     role: 'Entrepreneur',
-//     image: 'https://i.pravatar.cc/100?img=5',
-//     review:
-//       'Amazing staff and wonderful food presentation. Truly exceeded expectations!',
-//     rating: 4,
-//   },
-// ];
-
+const hardcodedTestimonials = [
+  {
+    _id: "hardcoded-1",
+    user: {
+      name: "Sophia Martinez",
+      photoURL: "https://i.pravatar.cc/100?img=1",
+    },
+    comment:
+      "Absolutely loved the Grilled Salmon! The flavors were perfectly balanced, and the atmosphere was so cozy.",
+    rating: 5,
+  },
+  {
+    _id: "hardcoded-2",
+    user: {
+      name: "Liam Johnson",
+      photoURL: "https://i.pravatar.cc/100?img=2",
+    },
+    comment:
+      "The steak was juicy and cooked to perfection. Definitely one of the best dining experiences I’ve had in town.",
+    rating: 5,
+  },
+  {
+    _id: "hardcoded-3",
+    user: {
+      name: "Emily Davis",
+      photoURL: "https://i.pravatar.cc/100?img=3",
+    },
+    comment:
+      "A hidden gem! The pasta was so delicious and creamy, I can’t wait to come back with my friends.",
+    rating: 5,
+  },
+];
 
 const Testimonials = () => {
   const [reviews, setReviews] = useState([]);
-  const fetchReviews = async () => {
-    try {
-      const response = await api.get('/reviews/my-reviews');
-      if (response.data.success) {
-        setReviews(response.data.data);
-      } else {
-        console.error('Failed to fetch reviews:', response.data.message);
-      }
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
-  // Fetch reviews on component mount
   useEffect(() => {
-    fetchReviews();
+    const fetchAndCombineReviews = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get("/reviews/featured");
+        const realReviews = response.data.data || [];
+
+        // --- START: THE FIX ---
+        // Create a set of IDs from the real reviews for efficient lookup.
+        const realReviewIds = new Set(realReviews.map((r) => r._id));
+
+        // Filter the hardcoded testimonials to only include those not already fetched from the API.
+        const uniqueHardcoded = hardcodedTestimonials.filter(
+          (h) => !realReviewIds.has(h._id)
+        );
+
+        // Combine the real reviews and the unique hardcoded reviews.
+        const combinedReviews = [...realReviews, ...uniqueHardcoded];
+        // --- END: THE FIX ---
+
+        setReviews(combinedReviews);
+      } catch (error) {
+        console.error("Error fetching reviews, using fallback:", error);
+        setReviews(hardcodedTestimonials);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndCombineReviews();
   }, []);
+
+  if (!loading && reviews.length === 0) {
+    return null;
+  }
+
   return (
     <section className="relative py-20">
-      {/* Background Video */}
       <video
         className="absolute inset-0 w-full h-full object-cover"
         src="https://res.cloudinary.com/du8e3wgew/video/upload/v1756134350/landingvideo_eoxkht.mp4"
@@ -85,7 +89,6 @@ const Testimonials = () => {
         muted
         playsInline
       />
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
       <div className="relative max-w-6xl mx-auto px-6 text-center text-white">
@@ -96,51 +99,50 @@ const Testimonials = () => {
           Real stories from happy customers who enjoyed our food and service.
         </p>
 
-        {/* Swiper */}
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 4000, disableOnInteraction: false }}
-          spaceBetween={20}
-          breakpoints={{
-            320: { slidesPerView: 1 },
-            640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-          className="pb-10"
-        >
-          {reviews.map(review => (
-            <SwiperSlide key={review.id}>
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 shadow-md flex flex-col items-center h-64">
-                <img
-                  src={review?.photoURL }
-                  alt={review.customerName}
-                  className="w-14 h-14 rounded-full object-cover mb-3"
-                />
-                {/* Review */}
-                <p className="text-sm text-gray-100 text-center line-clamp-3 flex-grow">
-                  "{review.comment}"
-                </p>
-                {/* Stars */}
-                <div className="flex justify-center gap-1 mt-2">
-                  {Array.from({ length: review.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4"
-                      fill="#8B1E3F"
-                      stroke="#8B1E3F"
-                    />
-                  ))}
+        {loading ? (
+          <p>Loading testimonials...</p>
+        ) : (
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            pagination={{ clickable: true, dynamicBullets: true }}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            spaceBetween={30}
+            breakpoints={{
+              640: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            className="pb-12"
+          >
+            {reviews.map((review) => (
+              <SwiperSlide key={review._id}>
+                <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 shadow-lg flex flex-col items-center h-full min-h-[18rem]">
+                  <img
+                    src={review.user?.photoURL || "https://i.pravatar.cc/100"}
+                    alt={review.user?.name || "Customer"}
+                    className="w-16 h-16 rounded-full object-cover mb-4 border-2 border-primary"
+                  />
+                  <p className="text-sm text-gray-100 text-center line-clamp-4 flex-grow">
+                    "{review.comment}"
+                  </p>
+                  <div className="flex justify-center gap-1 mt-4">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-5 h-5"
+                        fill={i < review.rating ? "#FFC107" : "none"}
+                        stroke={i < review.rating ? "#FFC107" : "#FFFFFF"}
+                      />
+                    ))}
+                  </div>
+                  <h4 className="mt-4 text-md font-semibold text-white">
+                    {review.user?.name || "Valued Customer"}
+                  </h4>
                 </div>
-                {/* Name */}
-                <h4 className="mt-2 text-sm font-semibold text-[#8B1E3F]">
-                  {review.customerName}
-                </h4>
-                {/* <p className="text-xs text-gray-300">{review.role}</p> */}
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
       </div>
     </section>
   );
