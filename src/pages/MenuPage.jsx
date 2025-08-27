@@ -89,7 +89,7 @@ const MenuPage = () => {
 
   const scrollTabs = direction => {
     if (!tabContainerRef.current) return;
-    const scrollAmount = 150;
+    const scrollAmount = 100;
     tabContainerRef.current.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth',

@@ -50,18 +50,15 @@ const Testimonials = () => {
         const response = await api.get("/reviews/featured");
         const realReviews = response.data.data || [];
 
-        // --- START: THE FIX ---
-        // Create a set of IDs from the real reviews for efficient lookup.
         const realReviewIds = new Set(realReviews.map((r) => r._id));
 
-        // Filter the hardcoded testimonials to only include those not already fetched from the API.
+
         const uniqueHardcoded = hardcodedTestimonials.filter(
           (h) => !realReviewIds.has(h._id)
         );
 
-        // Combine the real reviews and the unique hardcoded reviews.
         const combinedReviews = [...realReviews, ...uniqueHardcoded];
-        // --- END: THE FIX ---
+
 
         setReviews(combinedReviews);
       } catch (error) {
@@ -116,13 +113,13 @@ const Testimonials = () => {
           >
             {reviews.map((review) => (
               <SwiperSlide key={review._id}>
-                <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 shadow-lg flex flex-col items-center h-full min-h-[18rem]">
+                <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 shadow-lg flex flex-col items-center h-full min-h-[200px]">
                   <img
                     src={review.user?.photoURL || "https://i.pravatar.cc/100"}
                     alt={review.user?.name || "Customer"}
-                    className="w-16 h-16 rounded-full object-cover mb-4 border-2 border-primary"
+                    className="w-16 h-16 rounded-full object-cover mb-3 border-2 border-primary"
                   />
-                  <p className="text-sm text-gray-100 text-center line-clamp-4 flex-grow">
+                  <p className="text-sm text-gray-100 text-center line-clamp-2 h-[43px]">
                     "{review.comment}"
                   </p>
                   <div className="flex justify-center gap-1 mt-4">

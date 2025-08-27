@@ -18,7 +18,7 @@ const SingleMenuItem1 = ({ item }) => {
       <img
         src={item.imageUrl || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
         alt={item.name}
-        className="w-full h-44 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+        className="w-full h-40 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
       />
 
       {/* Gradient shadow bottom */}
@@ -27,10 +27,15 @@ const SingleMenuItem1 = ({ item }) => {
       {/* Content overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
         <h3 className="text-base font-medium">{item.name}</h3>
-        <p className="text-xs text-gray-200 line-clamp-2 truncate" title={item.description} >{item.description}</p>
+        <p
+          className="text-xs text-gray-200 line-clamp-2 truncate"
+          title={item.description}
+        >
+          {item.description}
+        </p>
 
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-xl font-bold text-primary-light">
+          <span className="text-lg md:text-xl font-semibold text-primary-light">
             ${formattedPrice}
           </span>
           <button
@@ -38,7 +43,7 @@ const SingleMenuItem1 = ({ item }) => {
             className="ml-2 flex items-center gap-1 bg-primary px-2 py-1.5 rounded text-xs font-medium hover:bg-primary-hover transition"
           >
             <FaCartPlus size={14} />
-            Add to Cart
+            Order Now
           </button>
         </div>
       </div>

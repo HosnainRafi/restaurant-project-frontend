@@ -27,20 +27,13 @@ const Navbar = ({ onCartClick }) => {
     volume: 0.5,
   });
 
-  // --- START: THE FIX ---
   const handleNotificationClick = link => {
-    // If a link is provided on the notification, navigate to it.
-    if (link) {
-      navigate(link);
-    }
-    // Close the panel regardless of whether a link was clicked.
+    if (link) navigate(link);
     setIsPanelOpen(false);
   };
 
-  // Calculate the unread count directly from the notifications state.
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  // Effect for fetching initial notifications when the user logs in.
   useEffect(() => {
     if (user && dbUser?._id) {
       api
@@ -50,17 +43,13 @@ const Navbar = ({ onCartClick }) => {
     }
   }, [user, dbUser]);
 
-  // Effect for managing the real-time socket connection.
   useEffect(() => {
     if (!dbUser?._id) return;
-
     const socket = io(import.meta.env.VITE_API_URL);
     socket.emit('join_room', dbUser._id);
 
     const handleNewNotification = newNotification => {
       setNotifications(prev => [newNotification, ...prev]);
-
-      // Sound/vibration logic is now centralized here.
       playNotificationSound();
       if (navigator.vibrate) {
         try {
@@ -72,16 +61,12 @@ const Navbar = ({ onCartClick }) => {
     };
 
     socket.on('notification:new', handleNewNotification);
-
     return () => {
       socket.off('notification:new', handleNewNotification);
       socket.disconnect();
     };
   }, [dbUser?._id, playNotificationSound]);
 
-  // --- END: CONSOLIDATED LOGIC ---
-
-  // Effect for handling clicks outside the dropdown and scroll events.
   useEffect(() => {
     const handleClickOutside = event => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -114,22 +99,22 @@ const Navbar = ({ onCartClick }) => {
   };
 
   const navLinkClass = ({ isActive }) => {
-    const baseColor = scrolled ? 'text-text-secondary' : 'text-sky-500';
+    const baseColor = scrolled ? 'text-gray-700' : 'text-sky-500';
     const activeColor = 'text-primary';
     return isActive
-      ? `${activeColor} font-semibold border-b-2 border-primary text-lg transition`
+      ? `${activeColor} font-semibold text-lg`
       : `${baseColor} hover:text-primary transition text-lg`;
   };
 
   const linkTextColor = scrolled
-    ? 'h-6 w-6 text-text-secondary'
+    ? 'h-6 w-6 text-gray-700'
     : 'h-6 w-6 text-sky-500';
 
   return (
     <>
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/50 backdrop-blur-md shadow-md' : 'bg-transparent'
+          scrolled ? 'bg-white/70 backdrop-blur-md shadow-md' : 'bg-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -142,6 +127,7 @@ const Navbar = ({ onCartClick }) => {
             Urban Grill
           </Link>
 
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6 font-medium">
             <NavLink to="/" className={navLinkClass}>
               Home
@@ -150,11 +136,7 @@ const Navbar = ({ onCartClick }) => {
               Menu
             </NavLink>
             {role !== 'admin' && (
-              <NavLink
-                to="/reservations"
-                className={navLinkClass}
-                onClick={() => setDropdownOpen(false)}
-              >
+              <NavLink to="/reservations" className={navLinkClass}>
                 Book a Table
               </NavLink>
             )}
@@ -183,14 +165,14 @@ const Navbar = ({ onCartClick }) => {
                       <>
                         <NavLink
                           to="/admin/dashboard/orders"
-                          className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                          className="block px-5 py-2.5 hover:bg-primary/10 rounded-md"
                           onClick={() => setDropdownOpen(false)}
                         >
                           Admin Dashboard
                         </NavLink>
                         <NavLink
                           to="/admin/dashboard/profile"
-                          className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                          className="block px-5 py-2.5 hover:bg-primary/10 rounded-md"
                           onClick={() => setDropdownOpen(false)}
                         >
                           Profile
@@ -200,15 +182,14 @@ const Navbar = ({ onCartClick }) => {
                       <>
                         <NavLink
                           to="/customer/dashboard/my-orders"
-                          className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                          className="block px-5 py-2.5 hover:bg-primary/10 rounded-md"
                           onClick={() => setDropdownOpen(false)}
                         >
                           My Dashboard
                         </NavLink>
-
                         <NavLink
                           to="/customer/dashboard/profile"
-                          className="block px-5 py-2.5 text-text-secondary hover:bg-primary/10 hover:text-primary transition rounded-md"
+                          className="block px-5 py-2.5 hover:bg-primary/10 rounded-md"
                           onClick={() => setDropdownOpen(false)}
                         >
                           Profile
@@ -234,7 +215,7 @@ const Navbar = ({ onCartClick }) => {
                 </NavLink>
                 <NavLink
                   to="/register"
-                  className="border border-primary text-primary py-2 px-4 rounded-md shadow-md hover:bg-primary-hover hover:text-white transition"
+                  className="border border-primary text-primary py-2 px-4 rounded-md shadow-md hover:bg-primary hover:text-white transition"
                 >
                   Sign Up
                 </NavLink>
@@ -242,6 +223,7 @@ const Navbar = ({ onCartClick }) => {
             )}
           </div>
 
+          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-4">
             {user && (
               <NotificationBell
@@ -258,18 +240,19 @@ const Navbar = ({ onCartClick }) => {
           </div>
         </div>
 
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white/80 backdrop-blur-md px-6 pb-4 space-y-4 border-t border-gray-200">
+          <div className="md:hidden bg-white/95 backdrop-blur-lg px-6 pt-4 pb-6 space-y-1 border-t border-gray-200 animate-slide-down">
             <NavLink
               to="/"
-              className={navLinkClass}
+              className="block py-1 text-lg text-gray-700 hover:text-primary transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </NavLink>
             <NavLink
               to="/menu"
-              className={navLinkClass}
+              className="block py-1 text-lg text-gray-700 hover:text-primary transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Menu
@@ -277,55 +260,62 @@ const Navbar = ({ onCartClick }) => {
             {role !== 'admin' && (
               <NavLink
                 to="/reservations"
-                className={navLinkClass}
+                className="block py-1 text-lg text-gray-700 hover:text-primary transition"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Book a Table
               </NavLink>
             )}
             {user ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {role === 'admin' || role === 'manager' ? (
                   <NavLink
                     to="/admin/dashboard/orders"
-                    className={navLinkClass}
+                    className="block py-1 text-lg text-gray-700 hover:text-primary transition"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Admin Dashboard
                   </NavLink>
                 ) : (
-                  <>
-                    <NavLink
-                      to="/customer/orders"
-                      className={navLinkClass}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      My Dashboard
-                    </NavLink>
-                  </>
+                  <NavLink
+                    to="/customer/orders"
+                    className="block py-1 text-lg text-gray-700 hover:text-primary transition"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Dashboard
+                  </NavLink>
                 )}
                 <NavLink
                   to="/customer/profile"
-                  className={navLinkClass}
+                  className="block py-1 text-lg text-gray-700 hover:text-primary transition"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Profile
                 </NavLink>
                 <button
                   onClick={handleLogout}
-                  className="bg-primary text-white py-2 px-4 rounded-md w-full hover:bg-primary-hover transition"
+                  className="w-full bg-primary text-white py-2 rounded-md shadow hover:bg-primary-hover transition"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <NavLink
-                to="/login"
-                className={navLinkClass}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </NavLink>
+              <div className="flex gap-3">
+                <NavLink
+                  to="/login"
+                  className="w-full bg-primary text-white py-2 rounded-md shadow hover:bg-primary-hover transition text-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  className="w-full border border-primary text-primary py-2 rounded-md shadow hover:bg-primary hover:text-white transition text-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </NavLink>
+              </div>
             )}
           </div>
         )}

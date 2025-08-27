@@ -31,7 +31,7 @@ const FeaturedCategory = () => {
         </p>
 
         {categories.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {categories.map(item => (
               <Link
                 key={item._id}
@@ -44,17 +44,17 @@ const FeaturedCategory = () => {
                   <img
                     src={item?.imageUrl}
                     alt={item.name}
-                    className="w-full h-40 sm:h-48 md:h-44 lg:h-56 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                    className="w-full h-40 sm:h-48 md:h-44 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110 group-hover:animate-spin"
                     loading="lazy"
                   />
                 </div>
 
                 {/* Stronger Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-lg md:text-xl font-semibold text-white group-hover:text-primary transition-colors truncate" title={item?.name} >
+                  <h3 className="text-base md:text-lg font-semibold text-white group-hover:text-primary transition-colors truncate" title={item?.name} >
                     {item.name}
                   </h3>
-                  <p className="mt-1 text-sm md:text-base text-gray-200 line-clamp-2">
+                  <p className="mt-1 text-xs md:text-sm truncate text-gray-200 line-clamp-2">
                     {item?.description}
                   </p>
                 </div>

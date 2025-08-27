@@ -18,7 +18,7 @@ const SingleMenuItem = ({ item }) => {
       <img
         src={item.imageUrl || 'https://i.postimg.cc/yNmbwGV3/category1.jpg'}
         alt={item.name}
-        className="w-full h-56 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+        className="w-full h-40 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
       />
 
       {/* Gradient shadow bottom */}
@@ -38,7 +38,7 @@ const SingleMenuItem = ({ item }) => {
             className="ml-2 flex items-center gap-1 bg-primary px-2 py-1.5 rounded text-xs font-medium hover:bg-primary-hover transition"
           >
             <FaCartPlus size={14} />
-            Add to Cart
+            Order Now
           </button>
         </div>
       </div>
