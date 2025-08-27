@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // The api interceptor automatically adds the token
       const response = await api.get("/auth/me");
+      console.log("rafi is", response);
       setDbUser(response.data.data);
     } catch (error) {
       console.error("Failed to fetch user profile from DB:", error);

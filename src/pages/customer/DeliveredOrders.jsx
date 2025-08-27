@@ -13,173 +13,224 @@ const DeliveredOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await api.get("/auth/me/orders");
-        const delivered = response.data.data.filter(
+        // UPDATED: Use the new endpoint that includes review data
+        const response = await api.get("/orders/my-orders");
+        const completed = response.data.data.filter(
           (order) => order.status === "completed"
         );
-        setOrders(delivered);
+        setOrders(completed);
       } catch (error) {
         console.error("Failed to load orders:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchOrders();
   }, []);
 
   const handleReviewChange = (id, text) => {
-    setReviews((prev) => ({ ...prev, [id]: { ...prev[id], text } }));
-    setErrors((prev) => ({ ...prev, [id]: { ...prev[id], text: "" } }));
+    setReviews((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], text },
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], text: "" },
+    }));
   };
 
   const handleRatingChange = (id, rating) => {
-    setReviews((prev) => ({ ...prev, [id]: { ...prev[id], rating } }));
-    setErrors((prev) => ({ ...prev, [id]: { ...prev[id], rating: "" } }));
-  };
-
-  const submitReview =async (id) => {
-    const review = reviews[id] || {};
-    let error = {};
-    if (!review.text) error.text = "Review cannot be empty";
-    if (!review.rating) error.rating = "Please select a rating";
-    setErrors((prev) => ({ ...prev, [id]: error }));
-    if (Object.keys(error).length > 0) return;
-
-    // Simulate API call will be here
-     try {
-    const { data } = await api.post("/reviews", {
-      orderId: id,
-      rating: review.rating,
-      comment: review.text,
-      customerName: dbUser?.name,
-      customerPhoto: dbUser?.photoURL,
-    });
-
-    console.log("Review submitted:", data);
-
-    // Clear review input after successful submission
-    setReviews((prev) => ({ ...prev, [id]: {} }));
-  } catch (err) {
-    console.error(err.response?.data || err.message);
+    setReviews((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], rating },
+    }));
     setErrors((prev) => ({
       ...prev,
-      [id]: { ...prev[id], api: "Something went wrong. Please try again." },
+      [id]: { ...prev[id], rating: "" },
     }));
-  }
   };
 
-  if (loading)
-    return (
-      <p className="text-center py-10 text-gray-500">
-        Loading delivered orders...
-      </p>
-    );
+  const submitReview = async (orderId) => {
+    const review = reviews[orderId] || {};
+    let error = {};
+
+    if (!review.text) error.text = "Review cannot be empty";
+    if (!review.rating) error.rating = "Please select a rating";
+
+    setErrors((prev) => ({ ...prev, [orderId]: error }));
+    if (Object.keys(error).length > 0) return;
+
+    try {
+      console.log("Submitting review for order:", orderId); // DEBUG LOG
+
+      const { data } = await api.post("/reviews", {
+        orderId: orderId, // Make sure this is the correct order ID
+        rating: review.rating,
+        comment: review.text,
+      });
+
+      console.log("Review submitted:", data);
+
+      // Update the orders list to reflect the new review
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === orderId ? { ...order, review: data.data } : order
+        )
+      );
+
+      // Clear review input after successful submission
+      setReviews((prev) => ({ ...prev, [orderId]: {} }));
+    } catch (err) {
+      console.error(
+        "Review submission error:",
+        err.response?.data || err.message
+      );
+      setErrors((prev) => ({
+        ...prev,
+        [orderId]: {
+          ...prev[orderId],
+          api:
+            err.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        },
+      }));
+    }
+  };
+
+  if (loading) return <div className="p-4">Loading delivered orders...</div>;
   if (orders.length === 0)
-    return (
-      <p className="text-center py-10 text-gray-500">
-        No delivered orders found.
-      </p>
-    );
+    return <div className="p-4">No completed orders found.</div>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-6 text-[#8B1E3F]">
-        Delivered Orders
-      </h1>
-      <div className="space-y-6">
-        {orders.map((order) => (
-          <div
-            key={order._id}
-            className="bg-white shadow-md rounded-xl p-5 hover:shadow-lg transition-all"
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <FaBoxOpen className="text-[#8B1E3F] text-lg" />
-                <h2 className="font-semibold text-gray-800">
-                  {order.orderNumber}
-                </h2>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-gray-500">
-                <FaCalendarAlt />
-                {new Date(order.updatedAt).toLocaleDateString()}
-              </div>
+    <div className="space-y-6">
+      {orders.map((order) => (
+        <div
+          key={order._id}
+          className="bg-white rounded-lg shadow-md p-6 border"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <FaBoxOpen className="text-green-600" />
+              <span className="font-semibold">Order #{order.orderNumber}</span>
             </div>
+            <div className="flex items-center space-x-2 text-gray-500 text-sm">
+              <FaCalendarAlt />
+              <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
 
-            {/* Items */}
-            <div className="space-y-2 mb-4">
-              {order.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex justify-between items-center text-sm bg-gray-50 px-3 py-2 rounded-lg"
-                >
-                  <span className="font-medium">{item.name}</span>
-                  <span className="text-gray-600">
-                    {item.quantity} × ${(item.price / 100).toFixed(2)}
-                  </span>
+          {/* Order Items */}
+          <div className="mb-4">
+            <h4 className="font-medium mb-2">Items:</h4>
+            <div className="space-y-1">
+              {order.items.map((item, index) => (
+                <div key={index} className="text-sm text-gray-600">
+                  {item.name} × {item.quantity} - $
+                  {(item.price / 100).toFixed(2)}
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Total */}
-            <div className="flex justify-between text-sm font-medium mb-4 border-t pt-2">
-              <span>Total</span>
-              <span className="text-[#8B1E3F] font-semibold">
-                ${(order.total / 100).toFixed(2)}
-              </span>
-            </div>
-
-            {/* Review Section */}
-            <div className="border-t pt-3 mt-2">
-              <div className="flex gap-1 mb-2">
-                {[1, 2, 3, 4, 5].map((star) => {
-                  const currentRating = reviews[order._id]?.rating || 0;
-                  return currentRating >= star ? (
-                    <FaStar
-                      key={star}
-                      className="text-[#8B1E3F] cursor-pointer"
-                      onClick={() => handleRatingChange(order._id, star)}
-                    />
-                  ) : (
-                    <FaRegStar
-                      key={star}
-                      className="text-gray-400 cursor-pointer hover:text-[#8B1E3F]"
-                      onClick={() => handleRatingChange(order._id, star)}
-                    />
-                  );
-                })}
+          {/* Existing Review Display */}
+          {order.review ? (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-medium text-green-800 mb-2">Your Review:</h4>
+              <div className="flex items-center mb-2">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <FaStar
+                    key={i}
+                    className={
+                      i < order.review.rating
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }
+                  />
+                ))}
+                <span className="ml-2 text-sm text-gray-600">
+                  ({order.review.rating}/5)
+                </span>
               </div>
-              {errors[order._id]?.rating && (
-                <p className="text-red-500 text-xs mb-2">
-                  {errors[order._id].rating}
-                </p>
-              )}
+              <p className="text-gray-700">{order.review.comment}</p>
+              <p className="text-xs text-gray-500 mt-2">
+                Reviewed on{" "}
+                {new Date(order.review.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          ) : (
+            /* Review Form */
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-medium mb-3">Leave a Review:</h4>
 
-              <textarea
-                placeholder="Write your review..."
-                value={reviews[order._id]?.text || ""}
-                onChange={(e) => handleReviewChange(order._id, e.target.value)}
-                className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#8B1E3F] outline-none mb-1 ${
-                  errors[order._id]?.text ? "border-red-500" : "border-gray-300"
-                }`}
-                rows={2}
-              />
-              {errors[order._id]?.text && (
-                <p className="text-red-500 text-xs mb-2">
-                  {errors[order._id].text}
-                </p>
-              )}
+              {/* Rating */}
+              <div className="mb-3">
+                <label className="block text-sm font-medium mb-1">
+                  Rating:
+                </label>
+                <div className="flex space-x-1">
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const rating = i + 1;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleRatingChange(order._id, rating)}
+                        className="focus:outline-none"
+                      >
+                        {(reviews[order._id]?.rating || 0) >= rating ? (
+                          <FaStar className="text-yellow-400 w-5 h-5" />
+                        ) : (
+                          <FaRegStar className="text-gray-400 w-5 h-5" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors[order._id]?.rating && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors[order._id].rating}
+                  </p>
+                )}
+              </div>
 
+              {/* Comment */}
+              <div className="mb-3">
+                <label className="block text-sm font-medium mb-1">
+                  Comment:
+                </label>
+                <textarea
+                  value={reviews[order._id]?.text || ""}
+                  onChange={(e) =>
+                    handleReviewChange(order._id, e.target.value)
+                  }
+                  placeholder="Share your experience..."
+                  className="w-full p-2 border rounded-md resize-none"
+                  rows={3}
+                />
+                {errors[order._id]?.text && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors[order._id].text}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
               <button
                 onClick={() => submitReview(order._id)}
-                className="bg-[#8B1E3F] text-white px-4 py-1.5 text-sm rounded-lg hover:bg-[#731935] transition"
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors"
               >
                 Submit Review
               </button>
+
+              {errors[order._id]?.api && (
+                <p className="text-red-500 text-sm mt-2">
+                  {errors[order._id].api}
+                </p>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
