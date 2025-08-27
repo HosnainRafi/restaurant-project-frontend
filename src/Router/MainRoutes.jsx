@@ -8,6 +8,7 @@ import CheckoutPage from '@/pages/CheckoutPage';
 import ErrorPage from '@/pages/Error/Error';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AboutUsPage from '@/pages/AboutUsPage';
+import ContactPage from '@/pages/ContactPage';
 
 export const MainRoutes = [
   {
@@ -28,6 +29,7 @@ export const MainRoutes = [
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <Register /> },
       { path: '/checkout', element: <CheckoutPage /> },
+      { path: '/contact', element: <ContactPage /> },
       { path: '/about-us', element: <AboutUsPage /> },
     ],
   },

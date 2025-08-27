@@ -1,5 +1,6 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes } from "react-icons/fa";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaTimes } from 'react-icons/fa';
 
 const NotificationPanel = ({
   isOpen,
@@ -10,8 +11,6 @@ const NotificationPanel = ({
 }) => {
   const handlePanelClick = () => {
     onMarkAsRead();
-    // You could also add a small delay before closing the panel
-    // setTimeout(onClose, 200);
   };
 
   return (
@@ -24,55 +23,62 @@ const NotificationPanel = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/30 z-50"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
           />
 
           {/* Panel */}
           <motion.div
-            initial={{ x: "100%" }}
+            initial={{ x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "tween", ease: "easeInOut" }}
-            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-50 flex flex-col"
+            exit={{ x: '100%' }}
+            transition={{ type: 'tween', ease: 'easeInOut' }}
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white/90 backdrop-blur-xl shadow-2xl z-50 flex flex-col rounded-l-2xl overflow-hidden"
             onClick={handlePanelClick}
           >
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold text-gray-800">Notifications</h2>
+            {/* Header */}
+            <div className="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-[#8B1E3F] to-[#701830] text-white shadow-md sticky top-0 z-10">
+              <h2 className="text-lg font-semibold">Notifications</h2>
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-800"
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
               >
-                <FaTimes size={20} />
+                <FaTimes size={18} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            {/* Notifications List */}
+            <div className="flex-1 overflow-y-auto px-4 py-3">
               {notifications.length === 0 ? (
-                <p className="p-6 text-center text-gray-500">
-                  You have no new notifications.
-                </p>
+                <div className="h-full flex flex-col items-center justify-center text-gray-500">
+                  <div className="text-6xl mb-3">🔔</div>
+                  <p className="text-sm">You have no new notifications.</p>
+                </div>
               ) : (
-                notifications.map((notification) => (
-                  <div
+                notifications.map(notification => (
+                  <motion.div
                     key={notification._id}
-                    onClick={() => onNotificationClick(notification.link)} // Call the handler on click
-                    className={`p-4 border-b flex items-start space-x-3 cursor-pointer ${
-                      // Add cursor-pointer
-                      !notification.isRead ? "bg-blue-50" : ""
+                    onClick={() => onNotificationClick(notification.link)}
+                    whileHover={{ scale: 1.02 }}
+                    className={`mb-3 p-4 rounded-xl shadow-sm border cursor-pointer transition ${
+                      !notification.isRead
+                        ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
+                        : 'bg-white hover:bg-gray-50 border-gray-200'
                     }`}
                   >
-                    {!notification.isRead && (
-                      <div className="mt-1 h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-700">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </p>
+                    <div className="flex items-start space-x-3">
+                      {!notification.isRead && (
+                        <span className="mt-1 h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-800 font-medium">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(notification.createdAt).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               )}
             </div>
