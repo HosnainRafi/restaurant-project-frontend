@@ -1,5 +1,6 @@
 import AboutSection from '@/components/AboutSection';
 import ChefsRecommendations from '@/components/ChefsRecommendations';
+import FAQSection from '@/components/FAQSection';
 import FeaturedCategory from '@/components/FeaturedCategory';
 import FeaturedDishes from '@/components/FeaturedDishes';
 import HeroSection from '@/components/Hero';
@@ -20,6 +21,7 @@ const HomePage = () => {
       <Testimonials />
       <WhyChooseUs />
       <OurChefs />
+      <FAQSection />
     </div>
   );
 };
