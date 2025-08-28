@@ -7,10 +7,14 @@ const NotificationPanel = ({
   onClose,
   notifications,
   onMarkAsRead,
+  onMarkAsReadSingle,
   onNotificationClick,
 }) => {
   const handlePanelClick = () => {
     onMarkAsRead();
+  };
+  const handlePanelClickSingle = id => {
+    onMarkAsReadSingle(id);
   };
 
   return (
@@ -33,17 +37,27 @@ const NotificationPanel = ({
             exit={{ x: '100%' }}
             transition={{ type: 'tween', ease: 'easeInOut' }}
             className="fixed top-0 right-0 h-full w-full max-w-sm bg-white/90 backdrop-blur-xl shadow-2xl z-50 flex flex-col rounded-l-2xl overflow-hidden"
-            onClick={handlePanelClick}
           >
             {/* Header */}
             <div className="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-[#8B1E3F] to-[#701830] text-white shadow-md sticky top-0 z-10">
               <h2 className="text-lg font-semibold">Notifications</h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
-              >
-                <FaTimes size={18} />
-              </button>
+              <div className="flex items-center space-x-2">
+                {/* Mark All as Read Button */}
+                {notifications.length > 0 && (
+                  <button
+                    onClick={handlePanelClick}
+                    className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-sm transition"
+                  >
+                    Mark All as Read
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
+                >
+                  <FaTimes size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Notifications List */}
@@ -57,7 +71,10 @@ const NotificationPanel = ({
                 notifications.map(notification => (
                   <motion.div
                     key={notification._id}
-                    onClick={() => onNotificationClick(notification.link)}
+                    onClick={() => {
+                      onNotificationClick(notification.link);
+                      handlePanelClickSingle(notification._id);
+                    }}
                     whileHover={{ scale: 1.02 }}
                     className={`mb-3 p-4 rounded-xl shadow-sm border cursor-pointer transition ${
                       !notification.isRead

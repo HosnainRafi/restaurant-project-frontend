@@ -15,8 +15,6 @@ import NotificationPanel from "./NotificationPanel";
 
 const Navbar = ({ onCartClick }) => {
   const { user, dbUser } = useAuth();
-  console.log("user is", user);
-  console.log("dbUser is ", dbUser);
   const role = useRole();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -94,6 +92,17 @@ const Navbar = ({ onCartClick }) => {
     });
   };
 
+  const handleMarkAsReadSingle = (id) => {
+    setNotifications(prev =>
+      prev.map(n => (n._id === id ? { ...n, isRead: true } : n))
+    );
+    setIsPanelOpen(false);
+    api
+      .patch(`/notifications/${id}/mark-as-read`)
+      .catch(err => console.error('Failed to mark notification as read', err));
+  };
+
+
   const handleLogout = () => {
     signOut(auth);
     navigate("/");
@@ -116,14 +125,14 @@ const Navbar = ({ onCartClick }) => {
     <>
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled ? "bg-white/70 backdrop-blur-md shadow-md" : "bg-transparent"
+          scrolled ? 'bg-white/70 backdrop-blur-md shadow-md' : 'bg-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link
             to="/"
             className={`text-2xl font-extrabold tracking-wide transition ${
-              scrolled ? "text-primary" : "text-sky-500"
+              scrolled ? 'text-primary' : 'text-sky-500'
             }`}
           >
             Urban Grill
@@ -137,7 +146,7 @@ const Navbar = ({ onCartClick }) => {
             <NavLink to="/menu" className={navLinkClass}>
               Menu
             </NavLink>
-            {role !== "admin" && (
+            {role !== 'admin' && (
               <NavLink to="/reservations" className={navLinkClass}>
                 Book a Table
               </NavLink>
@@ -149,21 +158,21 @@ const Navbar = ({ onCartClick }) => {
                 color={linkTextColor}
               />
             )}
-            {role === "customer" && user && (
+            {role === 'customer' && user && (
               <CartIcon onClick={onCartClick} color={linkTextColor} />
             )}
 
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <img
-                  src={dbUser?.photoURL || "/default-avatar.png"}
+                  src={dbUser?.photoURL || '/default-avatar.png'}
                   alt="Profile"
                   className="w-10 h-10 rounded-full cursor-pointer border-2 border-primary hover:scale-105 transition"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 />
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl z-50 border border-gray-100">
-                    {role === "admin" || role === "manager" ? (
+                    {role === 'admin' || role === 'manager' ? (
                       <>
                         <NavLink
                           to="/admin/dashboard/orders"
@@ -259,7 +268,7 @@ const Navbar = ({ onCartClick }) => {
             >
               Menu
             </NavLink>
-            {role !== "admin" && (
+            {role !== 'admin' && (
               <NavLink
                 to="/reservations"
                 className="block py-1 text-lg text-gray-700 hover:text-primary transition"
@@ -270,7 +279,7 @@ const Navbar = ({ onCartClick }) => {
             )}
             {user ? (
               <div className="space-y-3">
-                {role === "admin" || role === "manager" ? (
+                {role === 'admin' || role === 'manager' ? (
                   <NavLink
                     to="/admin/dashboard/orders"
                     className="block py-1 text-lg text-gray-700 hover:text-primary transition"
@@ -328,6 +337,7 @@ const Navbar = ({ onCartClick }) => {
         onClose={() => setIsPanelOpen(false)}
         notifications={notifications}
         onMarkAsRead={handleMarkAsRead}
+        onMarkAsReadSingle={handleMarkAsReadSingle}
         onNotificationClick={handleNotificationClick}
       />
     </>
