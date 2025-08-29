@@ -1,40 +1,74 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaBan, FaUnlock } from 'react-icons/fa';
+// Import your configured api client
+import api from '@/lib/api';
 
 const ManageUsers = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'Asadul Islam',
-      email: 'asad@example.com',
-      role: 'Admin',
-      status: 'Active',
-    },
-    {
-      id: 2,
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'User',
-      status: 'Blocked',
-    },
-    {
-      id: 3,
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'Manager',
-      status: 'Active',
-    },
-  ]);
+  // State for storing users, loading status, and errors
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const toggleStatus = id => {
-    setUsers(prev =>
-      prev.map(user =>
-        user.id === id
-          ? { ...user, status: user.status === 'Active' ? 'Blocked' : 'Active' }
-          : user
-      )
-    );
+  // Fetch users from the API when the component mounts
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // --- UPDATED: Simplified API call ---
+        // Your api client automatically adds the base URL and auth token.
+        const response = await api.get('/auth');
+
+        // The user list is inside response.data.data
+        if (response.data && response.data.success) {
+          setUsers(response.data.data);
+        }
+      } catch (err) {
+        setError('Failed to fetch users. Please try again later.');
+        console.error('Fetch users error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []); // The empty array [] means this effect runs only once on mount
+
+  // Update the status change function to call the API
+  const toggleStatus = async (userId, currentStatus) => {
+    const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
+
+    try {
+      // --- UPDATED: Simplified API call ---
+      // The base URL and auth headers are handled by your api client.
+      const response = await api.patch(
+        `/auth/${userId}/status`, // The endpoint relative to your baseURL
+        { status: newStatus }      // The request body
+      );
+
+      // If the API call is successful, update the state locally
+      if (response.data && response.data.success) {
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user._id === userId ? { ...user, status: newStatus } : user,
+          ),
+        );
+      }
+    } catch (err) {
+      alert('Failed to update user status. Please try again.');
+      console.error('Update status error:', err);
+    }
   };
+
+  // UI for loading and error states
+  if (loading) {
+    return <div className="p-6 text-center">Loading users...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="p-6">
@@ -56,7 +90,7 @@ const ManageUsers = () => {
           <tbody>
             {users.map((user, idx) => (
               <tr
-                key={user.id}
+                key={user._id}
                 className={`${
                   idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'
                 } hover:bg-gray-100 transition`}
@@ -65,35 +99,39 @@ const ManageUsers = () => {
                 <td className="px-4 py-3 text-gray-600 truncate">
                   {user.email}
                 </td>
-                <td className="px-4 py-3">{user.role}</td>
+                <td className="px-4 py-3 capitalize">{user.role}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 rounded-md text-xs font-medium ${
-                      user.status === 'Active'
+                      user.status === 'active'
                         ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {user.status}
+                    {user.status.charAt(0).toUpperCase() +
+                      user.status.slice(1)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center w-36">
-                  {user.status === 'Active' ? (
+                  {user.status === 'active' ? (
                     <button
-                      onClick={() => toggleStatus(user.id)}
-                      className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-red-500 text-white rounded-md hover:bg-red-600 transition w-full"
+                      onClick={() => toggleStatus(user._id, user.status)}
+                      // --- ADD THIS LINE: Disable button if the user's role is 'admin' ---
+                      disabled={user.role === 'admin'}
+                      className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-red-500 text-white rounded-md hover:bg-red-600 transition w-full disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
                       <FaBan size={12} /> Block
                     </button>
                   ) : (
                     <button
-                      onClick={() => toggleStatus(user.id)}
+                      onClick={() => toggleStatus(user._id, user.status)}
                       className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs bg-primary text-white rounded-md hover:bg-primary/90 transition w-full"
                     >
                       <FaUnlock size={12} /> Unblock
                     </button>
                   )}
                 </td>
+
               </tr>
             ))}
           </tbody>
