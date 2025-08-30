@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  sendEmailVerification,
   signInWithPopup,
   updateProfile, // Import updateProfile
 } from 'firebase/auth';
@@ -13,7 +14,6 @@ import { Eye, EyeOff } from 'lucide-react';
 import { ImSpinner3 } from 'react-icons/im';
 import { FcGoogle } from 'react-icons/fc';
 import api from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
 
 const Register = () => {
   const {
@@ -26,7 +26,6 @@ const Register = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { refetchDbUser } = useAuth();
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -84,8 +83,8 @@ const Register = () => {
       console.error('Backend sync failed:', error);
       toast.error('Could not sync your profile. Please try logging in again.');
     } finally {
-      refetchDbUser();
-      navigate('/');
+      await auth.signOut();
+      navigate('/login');
     }
   };
 
@@ -103,7 +102,10 @@ const Register = () => {
       await updateProfile(userCredential.user, {
         displayName: data.name,
       });
-
+      await sendEmailVerification(userCredential.user);
+      toast.success(
+        'Registration successful! Verification email sent. Please check your inbox.'
+      );
       toast.success('Registration successful! Syncing profile...');
       await syncUserWithBackend(userCredential.user, data);
     } catch (error) {

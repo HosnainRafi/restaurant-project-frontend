@@ -45,6 +45,11 @@ const Footer = () => {
                 Contact
               </Link>
             </li>
+            <li>
+              <Link to="/about-us" className="hover:text-primary transition">
+                About Us
+              </Link>
+            </li>
           </ul>
         </div>
 
