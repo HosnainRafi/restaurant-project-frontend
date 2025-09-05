@@ -7,6 +7,7 @@ import {
   FaChevronDown,
 } from 'react-icons/fa';
 import api from '@/lib/api';
+import { AiOutlineInbox, AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const DeliveredOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -97,9 +98,25 @@ const DeliveredOrders = () => {
     }
   };
 
-  if (loading) return <div className="p-4">Loading delivered orders...</div>;
+  if (loading)
+    return (
+      <div className="p-6 flex items-center space-x-3 text-primary">
+        <AiOutlineLoading3Quarters className="animate-spin text-3xl" />
+        <span className="text-lg font-semibold">
+          Loading delivered orders...
+        </span>
+      </div>
+    );
+
   if (orders.length === 0)
-    return <div className="p-4">No completed orders found.</div>;
+    return (
+      <div className="p-6 flex items-center space-x-3 min-h-screen justify-center text-primary">
+        <AiOutlineInbox className="text-3xl" />
+        <span className="text-lg font-semibold">
+          No completed orders found.
+        </span>
+      </div>
+    );
 
   return (
     <div className="space-y-4 p-6 md:p-10 bg-gray-50 min-h-screen">
