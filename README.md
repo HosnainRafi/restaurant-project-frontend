@@ -1,7 +1,7 @@
 <!-- PROJECT HEADER -->
 <p align="center">
   <!-- Replace with an actual banner image in your repo or remove this tag -->
-  <img src="https://raw.githubusercontent.com/HosnainRafi/restaurant-project-frontend/main/public/og-image.png" alt="Urban Grill Banner" width="100%" />
+  <img src="https://ibb.co.com/F4V3mLJD" alt="Urban Grill Banner" width="100%" />
 </p>
 
 <h1 align="center">Urban Grill 🍽️</h1>
