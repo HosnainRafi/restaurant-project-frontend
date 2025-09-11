@@ -1,237 +1,185 @@
-````markdown
-# Urban Grill 🍽️
+<!-- PROJECT HEADER -->
+<p align="center">
+  <!-- Replace with an actual banner image in your repo or remove this tag -->
+  <img src="https://raw.githubusercontent.com/HosnainRafi/restaurant-project-frontend/main/public/og-image.png" alt="Urban Grill Banner" width="100%" />
+</p>
 
-[Live Site](https://urban-grill.vercel.app/) • [Frontend Repo](https://github.com/HosnainRafi/restaurant-project-frontend) • [Backend Repo](https://github.com/HosnainRafi/restaurant-project-backend)
+<h1 align="center">Urban Grill 🍽️</h1>
+
+<p align="center">
+  A modern full‑stack restaurant web app for delightful ordering, smart reservations, real‑time order tracking, and powerful admin controls.
+</p>
+
+<p align="center">
+  <a href="https://urban-grill.vercel.app/">Live Site</a> •
+  <a href="https://github.com/HosnainRafi/restaurant-project-frontend">Frontend Repo</a> •
+  <a href="https://github.com/HosnainRafi/restaurant-project-backend">Backend Repo</a>
+</p>
+
+<p align="center">
+  <a href="https://nodejs.org/"><img alt="Node" src="https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white"></a>
+  <a><img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <a href="https://vercel.com"><img alt="Deploy" src="https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white"></a>
+  <a href="https://www.mongodb.com/"><img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white"></a>
+  <a href="https://stripe.com/"><img alt="Stripe" src="https://img.shields.io/badge/Payments-Stripe-635BFF?logo=stripe&logoColor=white"></a>
+</p>
 
 ---
 
 ## Overview
 
-**Urban Grill** is a modern full‑stack restaurant web application built for customers and administrators. It provides a polished UI for browsing menus, ordering food, reserving tables, leaving reviews, and tracking order status, while giving admins full control over menu items, reservations, chefs, users, and analytics. The app supports real‑time updates (Socket.IO), Stripe payments, file uploads (Cloudinary), and Firebase/JWT authentication.
+Urban Grill is a full‑stack restaurant application for customers and
+administrators. Customers can browse menus, order and pay via Stripe, reserve
+tables, leave reviews, and track orders in real time. Admins manage menu,
+orders, reservations, chefs, users, reviews, and analytics via a dedicated
+dashboard with charts and status workflows. Real‑time updates are powered by
+Socket.IO, and authentication uses Firebase/JWT.
 
 ---
 
 ## Table of contents
 
-- [Features](#features)
-- [Live demo](#live-demo)
-- [Tech stack](#tech-stack)
-- [Getting started (local)](#getting-started-local)
-  - [Prerequisites](#prerequisites)
-  - [Clone repositories](#clone-repositories)
-  - [Backend setup](#backend-setup)
-  - [Frontend setup](#frontend-setup)
-- [Environment variables (examples)](#environment-variables-examples)
-- [Available scripts](#available-scripts)
-- [Deployment notes](#deployment-notes)
-- [Project structure (high level)](#project-structure-high-level)
-- [Contributing](#contributing)
-- [Credits & contributors](#credits--contributors)
-- [License](#license)
-- [Contact](#contact)
+- Features
+- Live demo
+- Tech stack
+- Quick start
+  - Prerequisites
+  - Clone
+  - Backend setup
+  - Frontend setup
+- Environment variables
+- Scripts
+- Deployment
+- Screenshots
+- Project structure
+- Contributing
+- Credits
+- License
+- Contact
 
 ---
 
 ## Features
 
 ### Customer
-- Browse all categories and menu items
-- Filter and search menu items
-- Featured categories & dishes
-- Today’s specials and Chef’s recommendations
-- Make orders and pay via Stripe
-- Table reservation system for individual or groups
-- Track order status in customer dashboard (real‑time updates)
-- Cancel order (request to admin)
-- Leave reviews and see testimonials
-- Update user profile and password
+
+- Browse categories and menu items with search and filtering.
+- Featured categories, Chef’s picks, and Today’s specials.
+- Secure checkout with Stripe and real‑time order status (Socket.IO).
+- Table reservations for individuals or groups; cancel requests to admin.
+- Reviews and testimonials; update profile and password.
 
 ### Admin
-- Dashboard with totals, charts, and recent orders
-- Manage reservations (approve/decline)
-- Manage menu: add/update/delete items, mark as featured or chef recommendation
-- Manage orders: view history, update statuses (confirmed/preparing/cancelled)
-- Manage chefs: add/update/delete, toggle active/inactive
-- Manage users: view, change roles (manager/admin)
-- Manage reviews and feature testimonials on homepage
+
+- Dashboard with KPIs, charts, and recent orders.
+- Reservations management (approve/decline) with status control.
+- Menu management (create/update/delete), feature items and chef
+  recommendations.
+- Orders management with statuses (confirmed/preparing/cancelled).
+- Manage chefs (active/inactive), users (roles), and reviews/testimonials.
 
 ---
 
 ## Live demo
 
-Open the live site at: https://urban-grill.vercel.app/
+Open the live app: https://urban-grill.vercel.app/
 
 ---
 
 ## Tech stack
 
-**Frontend**
-- React 19
-- react-router-dom
+### Frontend
+
+- React 19, Vite, react-router-dom
 - react-hook-form + zod
-- Headless UI
-- Framer Motion
-- Swiper
-- Recharts
-- Stripe (react-stripe-js)
-- Socket.IO client
-- Firebase
-- Cloudinary
+- Headless UI, Framer Motion, Swiper, Recharts
+- Stripe (react-stripe-js), Socket.IO client
+- Firebase, Cloudinary
 - Axios, react-hot-toast, lucide-react, react-icons, react-datepicker, use-sound
 
-**Backend**
-- Node.js + Express
-- MongoDB (Mongoose)
-- Socket.IO
-- Stripe
-- Firebase Admin
-- JWT Authentication
-- bcrypt
+### Backend
+
+- Node.js, Express, MongoDB (Mongoose)
+- Socket.IO, Stripe
+- Firebase Admin, JWT Authentication, bcrypt
 - dotenv, cors, http-status, zod
 
 ---
 
-## Getting started (local)
+## Quick start
 
 ### Prerequisites
-- Node.js (>=18)
-- MongoDB instance (local or Atlas)
-- Stripe account
-- Firebase project
+
+- Node.js >= 18
+- MongoDB (local or Atlas)
+- Stripe account + keys
+- Firebase project (Web App + Admin SDK)
 - Cloudinary account
 
-### Clone repositories
-```bash
-# Clone frontend
-https://github.com/HosnainRafi/restaurant-project-frontend
+Notes:
 
-# Clone backend
-https://github.com/HosnainRafi/restaurant-project-backend
-````
-
-### Backend setup
-
-```bash
-cd restaurant-project-backend
-npm install
-# create .env file (see variables below)
-npm run dev
-```
-
-### Frontend setup
-
-```bash
-cd restaurant-project-frontend
-npm install
-# create .env file (see variables below)
-npm run dev
-```
+- Ensure CORS is configured to allow the frontend origin.
+- For Firebase Admin private keys, escape newlines or load via environment with
+  proper formatting.
 
 ---
 
-## Environment variables (examples)
-
-### Backend `.env`
-
-```
-PORT=5000
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-STRIPE_SECRET=your_stripe_secret
-FIREBASE_PROJECT_ID=xxx
-FIREBASE_CLIENT_EMAIL=xxx
-FIREBASE_PRIVATE_KEY=xxx
-CLOUDINARY_CLOUD_NAME=xxx
-CLOUDINARY_API_KEY=xxx
-CLOUDINARY_API_SECRET=xxx
-```
-
-### Frontend `.env`
-
-```
-VITE_API_URL=http://localhost:5000
-VITE_STRIPE_PUBLIC_KEY=your_public_key
-VITE_FIREBASE_API_KEY=xxx
-VITE_FIREBASE_AUTH_DOMAIN=xxx
-```
-
----
-
-## Available scripts
+## Scripts
 
 ### Backend
 
-* `npm run dev` → Start backend in dev mode
-* `npm run start` → Start backend in production
+- npm run dev → start in development
+- npm run start → start in production
 
 ### Frontend
 
-* `npm run dev` → Start Vite dev server
-* `npm run build` → Build for production
-* `npm run preview` → Preview production build
+- npm run dev → start Vite dev server
+- npm run build → production build
+- npm run preview → preview production build
 
 ---
 
-## Deployment notes
+## Deployment
 
-* Frontend deployed on **Vercel**
-* Backend deployable to **Render/Heroku/VPS**
-* Environment variables must be set in deployment environment
-
----
-
-## Project structure (high level)
-
-### Frontend
-
-```
-src/
-  components/
-  pages/
-  hooks/
-  utils/
-  assets/
-```
-
-### Backend
-
-```
-src/
-  controllers/
-  models/
-  routes/
-  middlewares/
-  utils/
-```
+- Frontend: Vercel (set frontend env vars in Vercel project settings).
+- Backend: Render/Heroku/VPS (set environment variables in provider).
+- Update VITE_API_URL to the deployed backend URL.
+- Configure Stripe webhook (if used) to the backend public URL.
+- Set CORS origins to the live frontend domain.
 
 ---
+
 
 ## Contributing
 
-Pull requests are welcome. For significant changes, please open an issue first to discuss what you’d like to change.
+Contributions are welcome!
+- Fork the repository and create a feature branch.
+- Follow conventional commits if possible.
+- Open a pull request describing changes and context.
+
+For major changes, please open an issue first to discuss what you’d like to change.
 
 ---
 
-## Credits & contributors
+## Credits
 
-* **Hosnain Rafi** – Backend developer ([@hosnainRafi](https://github.com/hosnainRafi))
-* **Md Asadul Islam** – Frontend developer ([@9340](https://github.com/9340))
-* **Tanvir Ahmmed Sifat** – Frontend developer ([@sifat26](https://github.com/sifat26))
+- Hosnain Rafi – Backend developer ([@hosnainRafi](https://github.com/hosnainRafi))
+- Md Asadul Islam – Frontend developer ([@9340](https://github.com/9340))
+- Tanvir Ahmmed Sifat – Frontend developer ([@sifat26](https://github.com/sifat26))
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License. See LICENSE for details.
 
 ---
 
 ## Contact
 
-For any inquiries:
+Project maintainer: Hosnain Rafi
+Email: vibebinary@gmail.com
 
-* Project maintainer: **Hosnain Rafi**
-* Email: *vibebinary@gmail.com*
-
-```
-```
+• Live: https://urban-grill.vercel.app/
+• Frontend: https://github.com/HosnainRafi/restaurant-project-frontend
+• Backend: https://github.com/HosnainRafi/restaurant-project-backend
