@@ -1,7 +1,7 @@
 <!-- PROJECT HEADER -->
 <p align="center">
   <!-- Replace with an actual banner image in your repo or remove this tag -->
-  <img src="https://ibb.co.com/F4V3mLJD" alt="Urban Grill Banner" width="100%" />
+  <img src="https://i.ibb.co.com/5hF4GgvR/Whats-App-Image-2025-09-12-at-00-48-17-0c540ff9.jpg" alt="Urban Grill Banner" width="100%" />
 </p>
 
 <h1 align="center">Urban Grill 🍽️</h1>
