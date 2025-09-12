@@ -163,7 +163,7 @@ For major changes, please open an issue first to discuss what you’d like to ch
 
 ## Credits
 
-- Hosnain Rafi – Backend developer ([@hosnainRafi](https://github.com/hosnainRafi))
+- Hosnain Rafi – Fullstack developer ([@hosnainRafi](https://github.com/hosnainRafi))
 - Md Asadul Islam – Frontend developer ([@9340](https://github.com/9340))
 - Tanvir Ahmmed Sifat – Frontend developer ([@sifat26](https://github.com/sifat26))
 
